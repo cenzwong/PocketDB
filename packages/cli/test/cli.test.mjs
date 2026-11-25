@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import pg from "pg";
+import { createPostgresBridge } from "../src/postgres-bridge.mjs";
 import { main, parseArguments } from "../src/cli.mjs";
 
 const uri = "pocketdb://example.invalid/secret-capability#private-data";
@@ -397,4 +399,41 @@ describe("PocketDB CLI parsing and command execution", () => {
     assert.equal(status, 4);
     assert.equal(JSON.parse(streams.output().stderr).error, "request-timeout");
   });
+});
+
+it("decodes JSON and JSONB through the PostgreSQL bridge", async () => {
+  const fields = [
+    { name: "document", dataTypeID: 3802 },
+    { name: "scalar", dataTypeID: 114 },
+    { name: "label", dataTypeID: 25 },
+    { name: "missing", dataTypeID: 3802 },
+  ];
+  const row = {
+    document: { nested: [true, 7] },
+    scalar: "value",
+    label: "plain text",
+    missing: null,
+  };
+  const bridge = await createPostgresBridge(
+    {
+      engineId: "postgresql",
+      query: async () => ({ rows: [row], fields }),
+    },
+    { port: 0 },
+  );
+  const client = new pg.Client({
+    host: bridge.host,
+    port: bridge.port,
+    user: "pocketdb",
+  });
+  try {
+    await client.connect();
+    const result = await client.query(
+      "SELECT document, scalar, label, missing",
+    );
+    assert.deepEqual(result.rows, [row]);
+  } finally {
+    await client.end();
+    await bridge.close();
+  }
 });

@@ -66,7 +66,7 @@ to the site root.
   console's snapshot export for portable backups.
 
 The local artifact probe is `pnpm test:pages`. It serves
-the built output under `/PocketDB/`, starts both worker-hosted engines and
-checks an invitation link retains the project path. It verifies subpath
-packaging locally; only a successful Pages deployment and browser run at the
-published URL prove the hosted deployment itself.
+the built output under `/PocketDB/`, starts both worker-hosted engines, checks
+that an invitation retains the project path, and opens the Distributed Mode
+console from the hosted page. A separate browser run at the published URL
+verifies the live deployment.

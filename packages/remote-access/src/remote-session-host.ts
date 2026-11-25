@@ -3,6 +3,7 @@ import {
   encodeEnvelope,
   ProtocolCodecError,
   DEFAULT_MAX_MESSAGE_BYTES,
+  MAX_PROTOCOL_STRING_LENGTH,
   type AuthenticatedPeerSession,
   decodeEnvelope,
   type ProtocolEnvelope,
@@ -84,6 +85,7 @@ export class RemoteSessionHost {
   private requestWindowStartedAt = Date.now();
   private requestsInWindow = 0;
   private readonly sessions = new Map<string, OpenRemoteSession>();
+  private readonly pendingSessions = new Set<string>();
   private readonly requests = new Map<string, RequestRecord>();
   private readonly messageUnsubscribe: Unsubscribe;
   private readonly stateUnsubscribe: Unsubscribe;
@@ -277,14 +279,20 @@ export class RemoteSessionHost {
         "not-started",
       );
     }
-    if (this.sessions.has(envelope.sessionId)) {
+    if (
+      this.sessions.has(envelope.sessionId) ||
+      this.pendingSessions.has(envelope.sessionId)
+    ) {
       throw new RemoteAccessError(
         "session-already-open",
         "The requested remote session ID is already open.",
         "not-started",
       );
     }
-    if (this.sessions.size >= this.maxOpenSessions) {
+    if (
+      this.sessions.size + this.pendingSessions.size >=
+      this.maxOpenSessions
+    ) {
       throw new RemoteAccessError(
         "session-limit-reached",
         "The connection has reached its open-session limit.",
@@ -300,26 +308,32 @@ export class RemoteSessionHost {
         "not-started",
       );
     }
-    const session = await this.runtime.openSession(auth.instanceId, {
-      sessionId: envelope.sessionId,
-      instanceId: auth.instanceId,
-      access: auth.access,
-      principal: auth.clientId,
-    });
-    if (this.closed) {
-      await this.runtime.closeSession(session.id);
-      return;
+    const sessionId = envelope.sessionId;
+    this.pendingSessions.add(sessionId);
+    try {
+      const session = await this.runtime.openSession(auth.instanceId, {
+        sessionId,
+        instanceId: auth.instanceId,
+        access: auth.access,
+        principal: auth.clientId,
+      });
+      if (this.closed) {
+        await this.runtime.closeSession(session.id);
+        return;
+      }
+      this.sessions.set(session.id, {
+        instanceId: auth.instanceId,
+        engineId: auth.engineId,
+        access: auth.access,
+      });
+    } finally {
+      this.pendingSessions.delete(sessionId);
     }
-    this.sessions.set(session.id, {
-      instanceId: auth.instanceId,
-      engineId: auth.engineId,
-      access: auth.access,
-    });
     await this.send({
       version: 1,
       type: "response",
       id: envelope.id,
-      sessionId: session.id,
+      sessionId,
       payload: {
         opened: true,
         capabilities: createCapabilityManifest(
@@ -643,11 +657,15 @@ export class RemoteAccessError extends Error {
 }
 
 function toProtocolError(cause: unknown): ProtocolError {
+  const message =
+    cause instanceof Error && cause.message
+      ? cause.message.slice(0, MAX_PROTOCOL_STRING_LENGTH)
+      : "The remote operation could not be completed.";
   if (cause instanceof EngineOperationError) {
     const notStarted = cause.code === "permission-denied";
     return {
       code: cause.code,
-      message: cause.message,
+      message,
       retryable: false,
       outcome: notStarted ? "not-started" : "failed",
     };
@@ -661,7 +679,7 @@ function toProtocolError(cause: unknown): ProtocolError {
     ].includes(cause.code);
     return {
       code: cause.code,
-      message: cause.message,
+      message,
       retryable: false,
       outcome: notStarted ? "not-started" : "failed",
     };
@@ -669,7 +687,7 @@ function toProtocolError(cause: unknown): ProtocolError {
   if (cause instanceof RemoteAccessError) {
     return {
       code: cause.code,
-      message: cause.message,
+      message,
       retryable: false,
       outcome: cause.outcome,
     };

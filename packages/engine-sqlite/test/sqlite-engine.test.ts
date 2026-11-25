@@ -65,25 +65,31 @@ describe("SQLite engine adapter", () => {
     const query = (session: typeof first, sql: string) =>
       instance.execute(session, { operation: "query", payload: { sql } });
 
-    await Promise.all([
-      query(first, "CREATE TABLE entries (value TEXT)"),
-      query(first, "BEGIN"),
-    ]);
-    await expect(
-      Promise.all([
-        query(first, "SAVEPOINT nested"),
-        query(first, "INSERT INTO entries VALUES ('pending')"),
-        query(first, "ROLLBACK TO nested"),
-      ]),
-    ).resolves.toHaveLength(3);
+    await query(first, "CREATE TABLE entries (value TEXT)");
+    const begin = query(first, "BEGIN");
     await expect(
       query(second, "INSERT INTO entries VALUES ('other')"),
     ).rejects.toMatchObject({ code: "sqlite-session-busy" });
+    await begin;
+
+    await query(first, "INSERT INTO entries VALUES ('pending')");
+    await query(first, "SAVEPOINT nested");
+    await query(first, "INSERT INTO entries VALUES ('discarded')");
+    await query(first, "ROLLBACK TRANSACTION /* keep outer */ TO nested");
+    await expect(query(second, "COMMIT")).rejects.toMatchObject({
+      code: "sqlite-session-busy",
+    });
     await query(first, "ROLLBACK");
-    await expect(
-      query(second, "INSERT INTO entries VALUES ('other')"),
-    ).resolves.toMatchObject({ value: { rows: [] } });
+
+    await query(first, "SAVEPOINT outermost");
+    await query(first, "INSERT INTO entries VALUES ('pending')");
+    await expect(query(second, "SELECT * FROM entries")).rejects.toMatchObject({
+      code: "sqlite-session-busy",
+    });
     await instance.closeSession(first);
+    await expect(query(second, "SELECT * FROM entries")).resolves.toEqual({
+      value: { rows: [] },
+    });
     await instance.closeSession(second);
     await instance.stop();
   });

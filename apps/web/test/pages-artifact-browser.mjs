@@ -146,12 +146,22 @@ try {
       "",
     );
     await clientPage.close();
+    const distributedUrl = await hostPage.evaluate(
+      `document.querySelector('a[href="./distributed.html"]').href`,
+    );
+    assert.equal(new URL(distributedUrl).pathname, `${prefix}distributed.html`);
+    const distributedPage = await page(distributedUrl);
+    await distributedPage.wait(
+      "Boolean(document.querySelector('#replica-host-start'))",
+    );
+    await distributedPage.close();
     await hostPage.close();
     return {
       browser: version,
       projectPath: prefix,
       postgresqlWorker: true,
       keyValueWorker: true,
+      distributedConsole: true,
       directInvitationPath: new URL(invitationUrl).pathname,
     };
   });

@@ -1,3 +1,4 @@
+export const MAX_PROTOCOL_STRING_LENGTH = 512;
 export const PROTOCOL_VERSION = 1 as const;
 export const DEFAULT_MAX_MESSAGE_BYTES = 256 * 1024;
 
@@ -686,10 +687,14 @@ function validId(value: unknown): void {
 }
 
 function validString(value: unknown, field: string): void {
-  if (typeof value !== "string" || value.length === 0 || value.length > 512) {
+  if (
+    typeof value !== "string" ||
+    value.length === 0 ||
+    value.length > MAX_PROTOCOL_STRING_LENGTH
+  ) {
     throw codecError(
       "invalid-envelope",
-      `${field} must be a non-empty string of at most 512 characters.`,
+      `${field} must be a non-empty string of at most ${MAX_PROTOCOL_STRING_LENGTH} characters.`,
     );
   }
 }

@@ -210,6 +210,8 @@ export class SqliteEngineInstance implements EngineInstance {
         "SQLite operation was cancelled before execution.",
       );
     return this.runExclusive(() => {
+      this.requireStarted();
+      this.requireSession(session);
       if (this.transactionOwner && this.transactionOwner !== session.id) {
         throw new EngineOperationError(
           "sqlite-session-busy",
@@ -221,14 +223,21 @@ export class SqliteEngineInstance implements EngineInstance {
           "request-aborted",
           "SQLite operation was cancelled before execution.",
         );
+      const database = this.requireDatabase();
+      const pointer = database.pointer;
+      if (pointer === undefined)
+        throw new EngineRuntimeError(
+          "instance-not-started",
+          `SQLite instance '${this.id}' is unavailable.`,
+        );
+      const { capi } = this.requireSqlite();
       try {
-        const rows = this.requireDatabase().exec({
+        const rows = database.exec({
           sql: payload.sql,
           bind: payload.params as BindingSpec | undefined,
           returnValue: "resultRows",
           rowMode: payload.rowMode ?? "object",
         }) as unknown[];
-        this.updateTransactionOwner(session.id, payload.sql);
         return { value: { rows } };
       } catch (cause) {
         if (
@@ -241,6 +250,10 @@ export class SqliteEngineInstance implements EngineInstance {
         throw new EngineOperationError("sqlite-query-failed", message, {
           cause,
         });
+      } finally {
+        this.transactionOwner = capi.sqlite3_get_autocommit(pointer)
+          ? undefined
+          : session.id;
       }
     });
   }
@@ -401,22 +414,6 @@ export class SqliteEngineInstance implements EngineInstance {
         "session-not-found",
         `Session '${session.id}' is not open on this SQLite instance.`,
       );
-  }
-  private updateTransactionOwner(sessionId: SessionId, sql: string): void {
-    const command = /^\s*(BEGIN|COMMIT|END|ROLLBACK)\b/i
-      .exec(sql)?.[1]
-      ?.toLowerCase();
-    if (command === "begin") this.transactionOwner = sessionId;
-    const rollbackToSavepoint = /^\s*ROLLBACK(?:\s+TRANSACTION)?\s+TO\b/i.test(
-      sql,
-    );
-    if (
-      (command === "commit" ||
-        command === "end" ||
-        (command === "rollback" && !rollbackToSavepoint)) &&
-      this.transactionOwner === sessionId
-    )
-      this.transactionOwner = undefined;
   }
   private isMemory(): boolean {
     return this.dataDir === "memory://";

@@ -496,12 +496,15 @@ function dataRow(row, fields) {
     "D",
     Buffer.concat([
       int16(values.length),
-      ...values.map((value) => {
+      ...values.map((value, index) => {
         if (value === null || value === undefined) return int32(-1);
+        const oid = fields[index]?.dataTypeID;
         const text =
-          typeof value === "object" && value instanceof Uint8Array
-            ? `\\x${Buffer.from(value).toString("hex")}`
-            : String(value);
+          oid === 114 || oid === 3802
+            ? JSON.stringify(value)
+            : value instanceof Uint8Array
+              ? `\\x${Buffer.from(value).toString("hex")}`
+              : String(value);
         const bytes = Buffer.from(text, "utf8");
         return Buffer.concat([int32(bytes.length), bytes]);
       }),

@@ -53,55 +53,48 @@ export async function connectNode(
         peerConnection = undefined;
         transport = undefined;
 
+        const offer = await signaling.receiveDescription(
+          invitation.roomId,
+          "offer",
+          { timeoutMs: signalingTimeoutMs, signal: attemptSignal },
+        );
         const identity = await createPeerIdentity();
         const peerId = await getPeerIdentityId(identity.publicKey);
+        attemptSignal.throwIfAborted();
         const currentPeer = new RTCPeerConnection({
           iceUseDefaultStunServer: false,
           ...iceConfig,
         });
         peerConnection = currentPeer;
-        const channelPromise = waitForDataChannel(
-          currentPeer,
-          channelTimeoutMs,
+        const negotiation = new AbortController();
+        const negotiationSignal = AbortSignal.any([
           attemptSignal,
-        );
-        const channelResultPromise = channelPromise.then(
-          (channel) => ({ channel }),
-          (error) => ({ error }),
-        );
-        const offerPromise = signaling.receiveDescription(
-          invitation.roomId,
-          "offer",
-          {
-            timeoutMs: signalingTimeoutMs,
-            signal: attemptSignal,
-          },
-        );
-        const offer = await Promise.race([
-          offerPromise,
-          channelResultPromise.then(({ error }) => {
-            if (error) throw error;
-            return new Promise(() => {});
-          }),
+          negotiation.signal,
         ]);
-        await currentPeer.setRemoteDescription(offer);
-        await currentPeer.setLocalDescription(await currentPeer.createAnswer());
-        if (!currentPeer.localDescription) {
-          throw new PocketDBClientError(
-            "node-webrtc-negotiation-failed",
-            "Werift did not create a local answer.",
-            "not-started",
+        const negotiate = async () => {
+          await currentPeer.setRemoteDescription(offer);
+          negotiationSignal.throwIfAborted();
+          const answer = await currentPeer.createAnswer();
+          negotiationSignal.throwIfAborted();
+          await currentPeer.setLocalDescription(answer);
+          if (!currentPeer.localDescription) {
+            throw new PocketDBClientError(
+              "node-webrtc-negotiation-failed",
+              "Werift did not create a local answer.",
+              "not-started",
+            );
+          }
+          await signaling.publishDescription(
+            invitation.roomId,
+            "answer",
+            currentPeer.localDescription,
+            negotiationSignal,
           );
-        }
-        await signaling.publishDescription(
-          invitation.roomId,
-          "answer",
-          currentPeer.localDescription,
-          attemptSignal,
-        );
-        const channelResult = await channelResultPromise;
-        if ("error" in channelResult) throw channelResult.error;
-        const { channel } = channelResult;
+        };
+        const [channel] = await Promise.all([
+          waitForDataChannel(currentPeer, channelTimeoutMs, negotiationSignal),
+          negotiate(),
+        ]).finally(() => negotiation.abort());
         await waitForChannelOpen(
           channel,
           currentPeer,

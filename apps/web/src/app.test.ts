@@ -10,7 +10,7 @@ describe("PocketDB entry point", () => {
     );
     expect(markup).toContain("<h1>Local database</h1>");
     expect(markup).toContain(
-      'href="/distributed.html">Open Distributed Mode</a>',
+      'href="./distributed.html">Open Distributed Mode</a>',
     );
     expect(markup).toContain(
       'id="runtime-status" class="status-pill" role="status"',

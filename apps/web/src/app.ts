@@ -66,7 +66,7 @@ export function createAppMarkup(): string {
             <svg class="database-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true"><ellipse cx="10" cy="4.5" rx="6" ry="2.5" /><path d="M4 4.5v10.8c0 1.35 2.69 2.45 6 2.45s6-1.1 6-2.45V4.5M4 9.9c0 1.35 2.69 2.45 6 2.45s6-1.1 6-2.45" /></svg><span>Local Key-value</span>
           </button>
         </div>
-        <p class="sidebar-note" data-host-only>Runs in this browser.<br />This page is the host.<br /><a href="/distributed.html">Open Distributed Mode</a></p>
+        <p class="sidebar-note" data-host-only>Runs in this browser.<br />This page is the host.<br /><a href="./distributed.html">Open Distributed Mode</a></p>
       </aside>
 
       <main class="workspace">

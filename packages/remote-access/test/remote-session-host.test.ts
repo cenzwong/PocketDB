@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   decodeEnvelope,
   encodeEnvelope,
@@ -180,6 +180,46 @@ describe("RemoteSessionHost", () => {
     const client = new ProtocolPeer(pair.left);
     await negotiate(client, "denial-hello");
 
+    const readOnlySession = {
+      version: 1,
+      type: "open-session",
+      id: "open-read-only",
+      sessionId: "read-only",
+      instanceId: authSession.instanceId,
+      engineId: "kv",
+      access: "read-only",
+    } as const;
+    await expect(client.exchange(readOnlySession)).resolves.toMatchObject({
+      type: "response",
+    });
+    const request = {
+      version: 1,
+      type: "request",
+      id: "long-error",
+      sessionId: readOnlySession.sessionId,
+      instanceId: authSession.instanceId,
+      engineId: "kv",
+      operation: "x".repeat(512),
+      payload: [],
+    } as const;
+    const longError = await client.exchange(request);
+    expect(longError).toMatchObject({
+      type: "error",
+      error: { code: "permission-denied" },
+    });
+    if (longError.type === "error")
+      expect(longError.error.message).toHaveLength(512);
+    await expect(
+      client.exchange({
+        ...request,
+        id: "after-long-error",
+        operation: "PING",
+      }),
+    ).resolves.toMatchObject({
+      type: "response",
+      payload: "PONG",
+    });
+
     const denied = await client.exchange({
       version: 1,
       type: "open-session",
@@ -208,6 +248,66 @@ describe("RemoteSessionHost", () => {
       error: { code: "session-not-found", outcome: "not-started" },
     });
     await host.close();
+    await runtime.stopInstance(authSession.instanceId);
+  });
+
+  it("reserves capacity for pending opens and closes a session that finishes after disconnect", async () => {
+    const runtime = new Runtime();
+    runtime.registerAdapter(new KeyValueEngineAdapter());
+    await runtime.startInstance("kv", authSession.instanceId);
+    const openSession = runtime.openSession.bind(runtime);
+    let releaseOpen = () => {};
+    const pending = new Promise<void>((resolve) => {
+      releaseOpen = resolve;
+    });
+    const opening = vi
+      .spyOn(runtime, "openSession")
+      .mockImplementationOnce(async (...args) => {
+        await pending;
+        return openSession(...args);
+      });
+    const closing = vi.spyOn(runtime, "closeSession");
+    const pair = createInProcessTransportPair();
+    const host = new RemoteSessionHost(
+      runtime,
+      pair.right,
+      {
+        authorize: () => authSession,
+      },
+      { maxOpenSessions: 1 },
+    );
+    const client = new ProtocolPeer(pair.left);
+    await negotiate(client, "hello-pending");
+    const open = {
+      version: 1,
+      type: "open-session",
+      id: "first-open",
+      sessionId: "first",
+      instanceId: authSession.instanceId,
+      engineId: "kv",
+      access: "read-write",
+    } as const;
+
+    await client.send(open);
+    await vi.waitFor(() => expect(opening).toHaveBeenCalledTimes(1));
+    await expect(
+      client.exchange({ ...open, id: "duplicate-open" }),
+    ).resolves.toMatchObject({
+      type: "error",
+      error: { code: "session-already-open" },
+    });
+    await expect(
+      client.exchange({ ...open, id: "second-open", sessionId: "second" }),
+    ).resolves.toMatchObject({
+      type: "error",
+      error: { code: "session-limit-reached" },
+    });
+    expect(opening).toHaveBeenCalledTimes(1);
+    await pair.left.disconnect();
+    await host.close();
+    releaseOpen();
+    await vi.waitFor(() => expect(closing).toHaveBeenCalledWith("first"));
+    await closing.mock.results[0]?.value;
     await runtime.stopInstance(authSession.instanceId);
   });
 
