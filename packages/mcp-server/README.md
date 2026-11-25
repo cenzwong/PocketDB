@@ -13,7 +13,7 @@ Start a PocketDB engine in the web app first. Create an invitation with the inte
 - `pocketdb_connect`: accept a host-issued invitation and return an opaque process-local connection ID, engine, access level and negotiated capability manifest.
 - `pocketdb_connections`: list active connection metadata.
 - `pocketdb_inspect`: return capabilities and, for SQL engines, authorized schema information.
-- `pocketdb_query`: send a SQL query through the SDK.
+- `pocketdb_query`: send a SQL query through the SDK. Bigint results use decimal strings in both structured and text output.
 - `pocketdb_key_value`: issue PING, GET, SET or DEL through the SDK. Binary GET results are base64 encoded.
 - `pocketdb_export_query_csv`: export at most 10,000 rows from a single SELECT, with a read-only invitation and a bounded row count.
 - `pocketdb_disconnect`: close one connection.

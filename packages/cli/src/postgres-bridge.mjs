@@ -2,6 +2,12 @@ import { createServer } from "node:net";
 
 const MAX_PACKET_BYTES = 1024 * 1024;
 const LOOPBACK = new Set(["127.0.0.1", "::1", "localhost"]);
+const TRANSACTION_END_COMMANDS = new Set([
+  "COMMIT",
+  "END",
+  "ROLLBACK",
+  "ABORT",
+]);
 const OID_SIZES = new Map([
   [16, 1],
   [20, 8],
@@ -419,17 +425,27 @@ async function runQuery(
   getTransaction,
   simpleQuery = true,
 ) {
+  const [verb, ...modifiers] = transactionKeywords(sql);
+  const endsTransaction = TRANSACTION_END_COMMANDS.has(verb);
+  const [action, next] = ["WORK", "TRANSACTION"].includes(modifiers[0])
+    ? modifiers.slice(1)
+    : modifiers;
   try {
-    if (getTransaction() === "E" && !/^\s*(rollback|commit)\b/i.test(sql)) {
+    if (getTransaction() === "E" && !endsTransaction) {
       throw Object.assign(
         new Error("Current transaction is aborted; rollback is required."),
         { code: "25P02" },
       );
     }
     const result = await client.query(sql, params, { rowMode: "array" });
-    if (result.command === "BEGIN" || /^\s*begin\b/i.test(sql))
+    if (result.command === "BEGIN" || verb === "BEGIN") {
       setTransaction("T");
-    else if (/^\s*(commit|rollback)\b/i.test(sql)) setTransaction("I");
+    } else if (endsTransaction) {
+      const keepsTransaction =
+        (verb === "ROLLBACK" && action === "TO") ||
+        (action === "AND" && next === "CHAIN");
+      setTransaction(keepsTransaction ? "T" : "I");
+    }
     if (simpleQuery && Array.isArray(result.rows)) {
       const fields = result.fields ?? [];
       if (fields.length) {
@@ -453,6 +469,33 @@ async function runQuery(
     );
     return undefined;
   }
+}
+
+// Command tags cannot distinguish a full ROLLBACK from ROLLBACK TO.
+function transactionKeywords(sql) {
+  const prefix = /\s+|--[^\r\n]*|\/\*|[a-z_][a-z_0-9$]*/iy;
+  const delimiters = /\/\*|\*\//g;
+  const keywords = [];
+  while (keywords.length < 4) {
+    const match = prefix.exec(sql);
+    if (!match) break;
+    const [token] = match;
+    if (token === "/*") {
+      delimiters.lastIndex = prefix.lastIndex;
+      let depth = 1;
+      while (depth > 0) {
+        const delimiter = delimiters.exec(sql);
+        if (!delimiter) return keywords;
+        depth += delimiter[0] === "/*" ? 1 : -1;
+      }
+      prefix.lastIndex = delimiters.lastIndex;
+    } else if (/^[a-z_]/i.test(token)) {
+      keywords.push(token.toUpperCase());
+      if (keywords.length === 1 && !TRANSACTION_END_COMMANDS.has(keywords[0]))
+        break;
+    }
+  }
+  return keywords;
 }
 
 function startupResponse() {

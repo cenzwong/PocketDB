@@ -517,3 +517,49 @@ it("waits for a pending PostgreSQL transaction before replacing a reset driver",
     await bridge.close();
   }
 });
+
+it("keeps savepoint rollbacks in a transaction and rolls back when the driver leaves", {
+  timeout: 10_000,
+}, async () => {
+  const queries = [];
+  const bridge = await createPostgresBridge(
+    {
+      engineId: "postgresql",
+      async query(sql) {
+        queries.push(sql);
+        if (sql === "SELECT broken") throw new Error("Test query failed.");
+        return { rows: [], command: sql.split(" ")[0] };
+      },
+    },
+    { port: 0 },
+  );
+  const driver = new pg.Client({
+    host: bridge.host,
+    port: bridge.port,
+    user: "pocketdb",
+  });
+  const rollbackTo =
+    "ROLLBACK WORK /* annotated /* nested */ */ TO SAVEPOINT s";
+  try {
+    await driver.connect();
+    await driver.query("BEGIN");
+    await driver.query("SAVEPOINT s");
+    await driver.query("ROLLBACK TO s");
+    assert.equal(driver.getTransactionStatus(), "T");
+    const readyAfterError = once(driver.connection, "readyForQuery");
+    await assert.rejects(driver.query("SELECT broken"), /Test query failed/);
+    await readyAfterError;
+    assert.equal(driver.getTransactionStatus(), "E");
+    await driver.query(rollbackTo);
+    assert.equal(driver.getTransactionStatus(), "T");
+    await driver.query("ROLLBACK TRANSACTION");
+    assert.equal(driver.getTransactionStatus(), "I");
+    await driver.query("BEGIN");
+    await driver.query("SAVEPOINT s");
+    await driver.query(rollbackTo);
+  } finally {
+    await driver.end();
+    await bridge.close();
+  }
+  assert.deepEqual(queries.slice(-2), [rollbackTo, "ROLLBACK"]);
+});

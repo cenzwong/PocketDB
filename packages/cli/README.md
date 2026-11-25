@@ -60,7 +60,9 @@ when done. Each invitation owns one local driver connection; separate driver
 sessions need separate invitations and bridge processes.
 
 The verified PostgreSQL subset covers protocol v3 startup, text-format simple
-and parameterized queries, result rows, and transactions. The engine serializes
+and parameterized queries, result rows, and transactions. Rolling back to a
+savepoint keeps the transaction open. The bridge rolls back any open
+transaction when the driver disconnects. The engine serializes
 active transactions: another invitation receives PostgreSQL `55006` until that
 transaction commits or rolls back. Binary formats, COPY, notifications,
 cancellation, portal row limits/cursors, local PostgreSQL authentication,

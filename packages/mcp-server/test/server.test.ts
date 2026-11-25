@@ -11,6 +11,17 @@ afterEach(async () => {
   await Promise.all(servers.splice(0).map((server) => server.close()));
 });
 
+async function startClient(server: ReturnType<typeof createPocketDBMcpServer>) {
+  const mcpClient = new Client({ name: "test-client", version: "1" });
+  const [clientTransport, serverTransport] =
+    InMemoryTransport.createLinkedPair();
+  servers.push(server);
+  clients.push(mcpClient);
+  await server.connect(serverTransport);
+  await mcpClient.connect(clientTransport);
+  return mcpClient;
+}
+
 test("exposes structured results, delegates authorization, and redacts failed credentials", async () => {
   const kv = {
     ping: vi.fn(async () => "PONG"),
@@ -36,13 +47,7 @@ test("exposes structured results, delegates authorization, and redacts failed cr
     return { client, close: client.close };
   });
   const server = createPocketDBMcpServer({ connect: connect as never });
-  const mcpClient = new Client({ name: "test-client", version: "1" });
-  const [clientTransport, serverTransport] =
-    InMemoryTransport.createLinkedPair();
-  servers.push(server);
-  clients.push(mcpClient);
-  await server.connect(serverTransport);
-  await mcpClient.connect(clientTransport);
+  const mcpClient = await startClient(server);
 
   const failedConnect = await mcpClient.callTool({
     name: "pocketdb_connect",
@@ -108,4 +113,66 @@ test("exposes structured results, delegates authorization, and redacts failed cr
     data: { disconnected: true },
   });
   expect(client.close).toHaveBeenCalledOnce();
+});
+
+test("serializes nested SQLite bigint results as decimal strings in both MCP outputs", async () => {
+  const client = {
+    engineId: "sqlite",
+    access: "owner",
+    capabilities: { operations: ["query"] },
+    query: vi.fn(async () => ({
+      rows: [
+        {
+          id: 9223372036854775807n,
+          nested: { values: [-9223372036854775808n, 1, null] },
+        },
+      ],
+    })),
+  };
+  const close = vi.fn(async () => undefined);
+  const connect = vi.fn(async () => ({ client, close }));
+  const mcpClient = await startClient(
+    createPocketDBMcpServer({ connect: connect as never }),
+  );
+  const connected = await mcpClient.callTool({
+    name: "pocketdb_connect",
+    arguments: {
+      invitationUri: "pocketdb://valid",
+      signalingEndpoint: "https://signal.example",
+    },
+  });
+  const {
+    data: { connectionId },
+  } = connected.structuredContent as { data: { connectionId: string } };
+  try {
+    const result = await mcpClient.callTool({
+      name: "pocketdb_query",
+      arguments: {
+        connectionId,
+        sql: "INSERT INTO items DEFAULT VALUES RETURNING id",
+      },
+    });
+    const expected = {
+      ok: true,
+      data: {
+        rows: [
+          {
+            id: "9223372036854775807",
+            nested: { values: ["-9223372036854775808", 1, null] },
+          },
+        ],
+      },
+    };
+    expect(result.isError).not.toBe(true);
+    expect(result.structuredContent).toEqual(expected);
+    expect(result.content).toEqual([
+      { type: "text", text: JSON.stringify(expected) },
+    ]);
+    expect(client.query).toHaveBeenCalledOnce();
+  } finally {
+    await mcpClient.callTool({
+      name: "pocketdb_disconnect",
+      arguments: { connectionId },
+    });
+  }
 });

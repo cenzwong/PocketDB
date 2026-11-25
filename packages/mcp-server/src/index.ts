@@ -280,12 +280,12 @@ export function createPocketDBMcpServer(options: PocketDBMcpOptions = {}) {
 }
 
 function success(data: unknown) {
-  const structuredContent = { ok: true, data };
+  const text = JSON.stringify({ ok: true, data }, (_key, value: unknown) =>
+    typeof value === "bigint" ? value.toString() : value,
+  );
   return {
-    structuredContent,
-    content: [
-      { type: "text" as const, text: JSON.stringify(structuredContent) },
-    ],
+    structuredContent: JSON.parse(text) as { ok: true; data?: unknown },
+    content: [{ type: "text" as const, text }],
   };
 }
 

@@ -368,6 +368,34 @@ describe("in-memory key-value commands", () => {
     await instance.stop();
   });
 
+  it("keeps persistence bookkeeping empty in a memory-only instance", async () => {
+    let now = 5_000;
+    const { execute, instance } = await createEngine({
+      maxMemoryBytes: 256,
+      now: () => now,
+    });
+    try {
+      for (let index = 0; index < 100; index++) {
+        const key = `temporary-${index}`;
+        await execute("SET", [key, "value"]);
+        if (index % 2 === 0) {
+          await execute("DEL", [key]);
+        } else {
+          await execute("EXPIRE", [key, 1]);
+          now += 1_000;
+          await execute("GET", [key]);
+        }
+      }
+      await expect(execute("DBSIZE")).resolves.toEqual({ value: 0 });
+      expect(instance).toMatchObject({
+        dirtyKeys: new Set(),
+        deletedKeys: new Set(),
+      });
+    } finally {
+      await instance.stop();
+    }
+  });
+
   it("reclaims expired bytes before admitting a bounded write", async () => {
     let now = 5_000;
     const { execute, instance } = await createEngine({

@@ -207,7 +207,7 @@ export class KeyValueEngineInstance implements EngineInstance {
   private loadEntries(entries: readonly StoredEntry[]): void {
     for (const entry of entries) {
       if (entry.expiresAt !== undefined && entry.expiresAt <= this.clock()) {
-        this.deletedKeys.add(entry.key);
+        if (this.database) this.deletedKeys.add(entry.key);
         continue;
       }
       const value = toBytes(entry.value);
@@ -583,8 +583,10 @@ export class KeyValueEngineInstance implements EngineInstance {
     this.memoryUsedBytes -= this.entryBytes(key, value);
     this.values.delete(key);
     this.expiresAt.delete(key);
-    this.dirtyKeys.delete(key);
-    this.deletedKeys.add(key);
+    if (this.database) {
+      this.dirtyKeys.delete(key);
+      this.deletedKeys.add(key);
+    }
     return true;
   }
 
@@ -604,6 +606,7 @@ export class KeyValueEngineInstance implements EngineInstance {
   }
 
   private markDirty(key: string): void {
+    if (!this.database) return;
     this.deletedKeys.delete(key);
     this.dirtyKeys.add(key);
   }
