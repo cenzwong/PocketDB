@@ -440,6 +440,126 @@ it("decodes JSON and JSONB through the PostgreSQL bridge", async () => {
   }
 });
 
+it("decodes PostgreSQL array results through simple and extended queries", async () => {
+  const fields = [
+    { name: "numbers", dataTypeID: 1007 },
+    { name: "labels", dataTypeID: 1009 },
+    { name: "dates", dataTypeID: 1182 },
+    { name: "bytes", dataTypeID: 1001 },
+    { name: "documents", dataTypeID: 3807 },
+    { name: "json", dataTypeID: 114 },
+    { name: "boxes", dataTypeID: 1020 },
+    { name: "empty", dataTypeID: 1007 },
+    { name: "absent", dataTypeID: 1007 },
+  ];
+  const labels = [
+    "NULL",
+    null,
+    "a,b",
+    "{braces}",
+    '"quoted"',
+    "back\\slash",
+    " spaced ",
+    "",
+  ];
+  const row = [
+    [
+      [1, null],
+      [2, 3],
+    ],
+    labels,
+    ["2026-11-25", null],
+    [Uint8Array.of(0, 255), null],
+    [[1, 2], { message: 'a"b' }, null],
+    [null, { top: true }],
+    ["(1,2),(3,4)", null],
+    [],
+    null,
+  ];
+  const bridge = await createPostgresBridge(
+    {
+      engineId: "postgresql",
+      query: async () => ({ rows: [row], fields }),
+      describeQuery: async () => ({ parameters: [], fields }),
+    },
+    { port: 0 },
+  );
+  const driver = new pg.Client({
+    host: bridge.host,
+    port: bridge.port,
+    user: "pocketdb",
+  });
+  const expected = {
+    numbers: row[0],
+    labels,
+    dates: [new Date(2026, 10, 25), null],
+    bytes: [Buffer.from([0, 255]), null],
+    documents: row[4],
+    json: row[5],
+    boxes: '{"(1,2),(3,4)";NULL}',
+    empty: [],
+    absent: null,
+  };
+  try {
+    await driver.connect();
+    assert.deepEqual((await driver.query("SELECT array_values")).rows, [
+      expected,
+    ]);
+    const extended = await driver.query({
+      text: "SELECT array_values",
+      queryMode: "extended",
+    });
+    assert.deepEqual(extended.rows, [expected]);
+  } finally {
+    await driver.end();
+    await bridge.close();
+  }
+});
+
+it("preserves backend SQLSTATE codes through the PostgreSQL bridge", async () => {
+  const bridge = await createPostgresBridge(
+    {
+      engineId: "postgresql",
+      async query(sql) {
+        const backendCodes = {
+          "INSERT INTO items VALUES (1)": "postgres-sql-23505",
+          "UPDATE items SET id = 2": "postgres-sql-40001",
+          "SELECT * FROM missing": "postgres-sql-42p01",
+          "SELECT forbidden": "permission-denied",
+          "SELECT fail": "postgres-sql-23505-extra",
+        };
+        throw Object.assign(new Error("Backend query failed."), {
+          code: backendCodes[sql],
+        });
+      },
+    },
+    { port: 0 },
+  );
+  const driver = new pg.Client({
+    host: bridge.host,
+    port: bridge.port,
+    user: "pocketdb",
+  });
+  try {
+    await driver.connect();
+    for (const [sql, code] of [
+      ["INSERT INTO items VALUES (1)", "23505"],
+      ["UPDATE items SET id = 2", "40001"],
+      ["SELECT * FROM missing", "42P01"],
+      ["SELECT forbidden", "42501"],
+      ["SELECT fail", "XX000"],
+    ]) {
+      await assert.rejects(driver.query(sql), {
+        code,
+        message: "Backend query failed.",
+      });
+    }
+  } finally {
+    await driver.end();
+    await bridge.close();
+  }
+});
+
 it("waits for a pending PostgreSQL transaction before replacing a reset driver", {
   timeout: 10_000,
 }, async () => {

@@ -8,6 +8,13 @@ const TRANSACTION_END_COMMANDS = new Set([
   "ROLLBACK",
   "ABORT",
 ]);
+const JSON_OID = 114;
+const JSONB_OID = 3802;
+const BOX_ARRAY_OID = 1020;
+const JSON_ARRAY_ELEMENT_OIDS = new Map([
+  [199, JSON_OID],
+  [3807, JSONB_OID],
+]);
 const OID_SIZES = new Map([
   [16, 1],
   [20, 8],
@@ -545,19 +552,37 @@ function dataRow(row, fields) {
       int16(values.length),
       ...values.map((value, index) => {
         if (value === null || value === undefined) return int32(-1);
-        const oid = fields[index]?.dataTypeID;
-        const text =
-          oid === 114 || oid === 3802
-            ? JSON.stringify(value)
-            : value instanceof Uint8Array
-              ? `\\x${Buffer.from(value).toString("hex")}`
-              : String(value);
-        const bytes = Buffer.from(text, "utf8");
+        const bytes = Buffer.from(
+          fieldText(value, fields[index]?.dataTypeID),
+          "utf8",
+        );
         return Buffer.concat([int32(bytes.length), bytes]);
       }),
     ]),
   );
 }
+function fieldText(value, oid) {
+  if (oid === JSON_OID || oid === JSONB_OID) return JSON.stringify(value);
+  if (Array.isArray(value)) return arrayText(value, oid);
+  if (value instanceof Uint8Array)
+    return `\\x${Buffer.from(value).toString("hex")}`;
+  return String(value);
+}
+
+function arrayText(values, oid) {
+  const jsonElementOid = JSON_ARRAY_ELEMENT_OIDS.get(oid);
+  const delimiter = oid === BOX_ARRAY_OID ? ";" : ",";
+  const elements = values.map((value) => {
+    if (value === null || value === undefined) return "NULL";
+    // A decoded JSON document may itself be an array.
+    if (Array.isArray(value) && jsonElementOid === undefined)
+      return arrayText(value, oid);
+    const text = fieldText(value, jsonElementOid);
+    return `"${text.replace(/["\\]/g, "\\$&")}"`;
+  });
+  return `{${elements.join(delimiter)}}`;
+}
+
 function commandComplete(command, affectedRows, rowCount, sql) {
   const tag =
     command ||
@@ -594,7 +619,12 @@ function errorResponse(code, text) {
   );
 }
 function sqlState(error) {
-  if (/^[0-9A-Z]{5}$/.test(error?.code ?? "")) return error.code;
+  const code = error?.code;
+  if (typeof code === "string") {
+    if (/^[0-9A-Z]{5}$/.test(code)) return code;
+    const engineCode = /^postgres-sql-([0-9a-z]{5})$/i.exec(code);
+    if (engineCode) return engineCode[1].toUpperCase();
+  }
   if (error?.code === "postgres-session-busy") return "55006";
   if (["permission-denied", "forbidden"].includes(error?.code)) return "42501";
   if (

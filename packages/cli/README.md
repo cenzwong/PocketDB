@@ -60,7 +60,10 @@ when done. Each invitation owns one local driver connection; separate driver
 sessions need separate invitations and bridge processes.
 
 The verified PostgreSQL subset covers protocol v3 startup, text-format simple
-and parameterized queries, result rows, and transactions. Rolling back to a
+and parameterized queries, result rows, and transactions. Result arrays use
+PostgreSQL text format, and backend SQLSTATE codes are returned to the driver.
+Decoded arrays inside JSON and JSONB arrays are treated as JSON elements.
+Rolling back to a
 savepoint keeps the transaction open. The bridge rolls back any open
 transaction when the driver disconnects. The engine serializes
 active transactions: another invitation receives PostgreSQL `55006` until that
