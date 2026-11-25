@@ -67,6 +67,37 @@ async function run(): Promise<void> {
       "SELECT i FROM range(10001) AS values(i)",
     );
 
+    stage = "read-only transaction";
+    const reader = await instance.openSession({
+      instanceId: instance.id,
+      sessionId: `reader-${seed}`,
+      access: "read-only",
+    });
+    await query(instance, session, "CREATE SEQUENCE protected_ids START 42");
+    await query(instance, reader, "SELECT count(*) AS total FROM sales");
+    try {
+      await query(instance, reader, "SELECT nextval('protected_ids')");
+      throw new Error("The read-only query unexpectedly succeeded.");
+    } catch (cause) {
+      assertImport(
+        cause instanceof Error &&
+          "code" in cause &&
+          cause.code === "duckdb-query-failed",
+        `Expected DuckDB to enforce read-only access: ${String(cause)}`,
+      );
+    }
+    const ids = await query(
+      instance,
+      session,
+      "SELECT nextval('protected_ids') AS id",
+    );
+    assertImport(
+      JSON.stringify(resultRows(ids)) === JSON.stringify([{ id: "42" }]),
+      "The read-only request advanced the sequence.",
+    );
+    await query(instance, reader, "SELECT count(*) AS total FROM sales");
+    await instance.closeSession(reader);
+
     assertImport(csvImport.rowCount === 3, "CSV ingestion row count differs.");
     assertImport(
       jsonImport.rowCount === 3,
@@ -124,6 +155,7 @@ async function run(): Promise<void> {
       },
       bundle: "mvp-single-threaded",
       storageMode: "memory",
+      readOnlyTransaction: true,
       limits: {
         maxDatasetBytes: 33_554_432,
         maxRows: 10_000,

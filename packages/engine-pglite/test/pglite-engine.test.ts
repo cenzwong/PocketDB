@@ -234,7 +234,7 @@ describe("PGlite engine adapter", () => {
     const { instance, first, second, query } = await createDatabase();
     await query(first, "CREATE TABLE tx_rows (id integer primary key)");
 
-    await query(first, "BEGIN");
+    await query(first, "/* first */ /* second */ BEGIN");
     await query(first, "INSERT INTO tx_rows VALUES (1)");
     await expect(
       query(second, "SELECT id FROM tx_rows ORDER BY id"),
@@ -244,8 +244,14 @@ describe("PGlite engine adapter", () => {
       (await query(second, "SELECT id FROM tx_rows ORDER BY id")).value,
     ).toMatchObject({ rows: [{ id: 1 }] });
 
-    await query(first, "BEGIN");
+    await query(first, "BEGIN/* comment */");
     await query(first, "INSERT INTO tx_rows VALUES (2)");
+    await expect(query(first, "SELECT 1/0")).rejects.toMatchObject({
+      code: "postgres-sql-22012",
+    });
+    await expect(query(second, "SELECT 1")).rejects.toMatchObject({
+      code: "postgres-session-busy",
+    });
     await query(first, "ROLLBACK");
     expect(
       (await query(second, "SELECT id FROM tx_rows ORDER BY id")).value,
@@ -258,11 +264,60 @@ describe("PGlite engine adapter", () => {
     await query(first, "CREATE TABLE close_rows (id integer primary key)");
     await query(first, "BEGIN");
     await query(first, "INSERT INTO close_rows VALUES (1)");
+    await instance.closeSession(second);
+    const reopened = await instance.openSession({
+      sessionId: second.id,
+      instanceId: instance.id,
+      access: "owner",
+    });
+    await expect(query(reopened, "SELECT 1")).rejects.toMatchObject({
+      code: "postgres-session-busy",
+    });
     await instance.closeSession(first);
     expect(
-      (await query(second, "SELECT id FROM close_rows")).value,
+      (await query(reopened, "SELECT id FROM close_rows")).value,
     ).toMatchObject({ rows: [] });
     await instance.stop();
+  });
+
+  it("returns temporal values as PostgreSQL text in object and array rows", async () => {
+    const { instance, first, query } = await createDatabase();
+    try {
+      await query(
+        first,
+        "CREATE TABLE temporal_rows (day date, local_time timestamp, utc_time timestamptz, days date[])",
+      );
+      await query(
+        first,
+        "INSERT INTO temporal_rows VALUES ('2026-11-25', '2026-11-25 01:02:03.123456', '2026-11-25 01:02:03.123456+00', ARRAY[DATE '2026-11-25'])",
+      );
+      const reader = await instance.openSession({
+        sessionId: "pg-temporal-reader",
+        instanceId: instance.id,
+        access: "read-only",
+      });
+      const row = {
+        day: "2026-11-25",
+        local_time: "2026-11-25 01:02:03.123456",
+        utc_time: "2026-11-25 01:02:03.123456+00",
+        days: ["2026-11-25"],
+      };
+      await expect(
+        query(first, "SELECT * FROM temporal_rows"),
+      ).resolves.toMatchObject({
+        value: { rows: [row] },
+      });
+      await expect(
+        instance.execute(reader, {
+          operation: "query",
+          payload: { sql: "SELECT * FROM temporal_rows", rowMode: "array" },
+        }),
+      ).resolves.toMatchObject({
+        value: { rows: [Object.values(row)] },
+      });
+    } finally {
+      await instance.stop();
+    }
   });
 
   it("preserves SQLSTATE and structured PostgreSQL error details", async () => {

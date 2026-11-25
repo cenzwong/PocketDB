@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { once } from "node:events";
+import { createConnection } from "node:net";
 import { describe, it } from "node:test";
 import pg from "pg";
 import { createPostgresBridge } from "../src/postgres-bridge.mjs";
@@ -434,6 +436,84 @@ it("decodes JSON and JSONB through the PostgreSQL bridge", async () => {
     assert.deepEqual(result.rows, [row]);
   } finally {
     await client.end();
+    await bridge.close();
+  }
+});
+
+it("waits for a pending PostgreSQL transaction before replacing a reset driver", {
+  timeout: 10_000,
+}, async () => {
+  const beginStarted = Promise.withResolvers();
+  const finishBegin = Promise.withResolvers();
+  const rollbackStarted = Promise.withResolvers();
+  const finishRollback = Promise.withResolvers();
+  let transactionOpen = false;
+  const bridge = await createPostgresBridge(
+    {
+      engineId: "postgresql",
+      async query(sql) {
+        if (sql === "BEGIN") {
+          beginStarted.resolve();
+          await finishBegin.promise;
+          transactionOpen = true;
+          return { rows: [], command: "BEGIN" };
+        }
+        if (sql === "ROLLBACK") {
+          rollbackStarted.resolve();
+          await finishRollback.promise;
+          transactionOpen = false;
+          return { rows: [], command: "ROLLBACK" };
+        }
+        assert.equal(transactionOpen, false);
+        return { rows: [], command: "SELECT" };
+      },
+    },
+    { port: 0 },
+  );
+  const options = { host: bridge.host, port: bridge.port, user: "pocketdb" };
+  const first = createConnection(options);
+  const assertBusy = async () => {
+    const contender = createConnection(options);
+    try {
+      const [errorResponse] = await once(contender, "data");
+      assert.match(errorResponse.toString(), /53300/);
+    } finally {
+      contender.destroy();
+    }
+  };
+  try {
+    await once(first, "connect");
+    const startup = Buffer.concat([
+      Buffer.from([0, 0, 0, 23, 0, 3, 0, 0]),
+      Buffer.from("user\0pocketdb\0\0"),
+    ]);
+    const ready = once(first, "data");
+    first.write(startup);
+    await ready;
+    first.write(Buffer.from([81, 0, 0, 0, 10, ...Buffer.from("BEGIN\0")]));
+    await beginStarted.promise;
+
+    const closed = once(first, "close");
+    first.resetAndDestroy();
+    await closed;
+    await assertBusy();
+    finishBegin.resolve();
+    await rollbackStarted.promise;
+    await assertBusy();
+
+    finishRollback.resolve();
+    await new Promise((resolve) => setImmediate(resolve));
+    const replacement = new pg.Client(options);
+    try {
+      await replacement.connect();
+      await replacement.query("SELECT 1");
+    } finally {
+      await replacement.end();
+    }
+  } finally {
+    finishBegin.resolve();
+    finishRollback.resolve();
+    first.destroy();
     await bridge.close();
   }
 });

@@ -174,7 +174,8 @@ export class DuckDBEngineInstance implements EngineInstance {
       );
     }
     const payload = requireQuery(request.payload);
-    if (session.access === "read-only" && !isSingleSelect(payload.sql)) {
+    const readOnly = session.access === "read-only";
+    if (readOnly && !isSingleSelect(payload.sql)) {
       throw new EngineOperationError(
         "permission-denied",
         "Read-only DuckDB sessions accept a single SELECT statement only.",
@@ -195,7 +196,12 @@ export class DuckDBEngineInstance implements EngineInstance {
     return this.runExclusive(async () => {
       const connection = this.requireConnection(session.id);
       let statement: Awaited<ReturnType<typeof connection.prepare>> | undefined;
+      let readOnlyTransaction = false;
       try {
+        if (readOnly) {
+          await connection.query("BEGIN TRANSACTION READ ONLY");
+          readOnlyTransaction = true;
+        }
         statement = await connection.prepare(payload.sql);
         const stream = await statement.send(...(payload.params ?? []));
         const rows: Record<string, unknown>[] = [];
@@ -266,9 +272,32 @@ export class DuckDBEngineInstance implements EngineInstance {
           { cause },
         );
       } finally {
-        await statement?.close();
+        try {
+          await statement?.close();
+        } finally {
+          if (readOnlyTransaction) {
+            await this.endReadOnlyTransaction(session.id, connection);
+          }
+        }
       }
     });
+  }
+
+  private async endReadOnlyTransaction(
+    sessionId: SessionId,
+    connection: DuckDBConnection,
+  ): Promise<void> {
+    try {
+      await connection.query("ROLLBACK");
+    } catch (cause) {
+      this.connections.delete(sessionId);
+      await connection.close().catch(() => undefined);
+      throw new EngineOperationError(
+        "duckdb-query-failed",
+        "DuckDB could not close the read-only transaction.",
+        { cause },
+      );
+    }
   }
 
   async importDataset(
@@ -323,15 +352,15 @@ export class DuckDBEngineInstance implements EngineInstance {
     this.requireStarted();
     this.requireSession(session);
     await this.runExclusive(async () => {
-      const connection = this.requireConnection(session.id);
+      const connection = this.connections.get(session.id);
       if (this.transactionOwner === session.id) {
         try {
-          await connection.query("ROLLBACK");
+          await connection?.query("ROLLBACK");
         } finally {
           this.transactionOwner = undefined;
         }
       }
-      await connection.close();
+      await connection?.close();
       this.connections.delete(session.id);
       this.sessions.delete(session.id);
     });

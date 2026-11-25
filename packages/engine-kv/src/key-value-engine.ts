@@ -367,15 +367,13 @@ export class KeyValueEngineInstance implements EngineInstance {
             `ERR unknown command '${request.operation}'.`,
           );
       }
-      await this.persistChanges();
-      return response;
-    }).catch((cause: unknown) => {
-      if (cause instanceof EngineOperationError) throw cause;
-      if (this.isPersistent()) {
+      try {
+        await this.persistChanges();
+      } catch (cause) {
         this.state = "failed";
         throw toStorageError(cause, "writing");
       }
-      throw cause;
+      return response;
     });
   }
 

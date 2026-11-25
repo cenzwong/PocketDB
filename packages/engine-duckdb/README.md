@@ -5,7 +5,7 @@
 ## Supported contract
 
 - Import local `.csv`, `.json` and `.parquet` files as tables. File names are normalized to SQL table identifiers. Imports are local owner actions and limited to 32 MiB per file.
-- Execute SQL queries with scalar bound parameters (`null`, boolean, number, string, bigint and `Uint8Array`). Read-only sessions accept one `SELECT` statement.
+- Execute SQL queries with scalar bound parameters (`null`, boolean, number, string, bigint and `Uint8Array`). Read-only sessions accept one `SELECT` statement and run it inside a DuckDB read-only transaction.
 - Return Arrow query results normalized to JSON-compatible rows, column names, row count and a truncation flag. Results are limited to 10,000 rows or 8 MiB of encoded row values, whichever comes first. Large integers become decimal strings to preserve precision; dates become ISO strings and nested values are normalized recursively.
 - Use the single-threaded WASM bundle. Bound dataset imports to 32 MiB, query results to 10,000 rows and 8 MiB of encoded row values, and imports are buffered in browser memory. DuckDB-Wasm and the browser enforce their own memory ceilings; the adapter does not promise a fixed total-process memory limit.
 - Run in session memory. This adapter does not advertise persistent storage because its fresh-worker OPFS reopen check failed in the current Chrome Canary harness. TASK-055 showed the underlying DuckDB-Wasm OPFS path can checkpoint and reopen in a direct probe, but that is not adapter evidence. A later persistence task must retest this lifecycle before enabling it.

@@ -1,4 +1,4 @@
-import { PGlite } from "@electric-sql/pglite";
+import { PGlite, types } from "@electric-sql/pglite";
 import {
   EngineOperationError,
   EngineRuntimeError,
@@ -35,6 +35,13 @@ const capabilities: EngineCapabilities = {
     persistentDataDir: true,
     portableSnapshots: true,
   },
+};
+
+const temporalText = (value: string): string => value;
+const temporalParsers = {
+  [types.DATE]: temporalText,
+  [types.TIMESTAMP]: temporalText,
+  [types.TIMESTAMPTZ]: temporalText,
 };
 
 const PGLITE_SNAPSHOT_FORMAT = "pglite-data-dir-gzip-v1";
@@ -103,6 +110,7 @@ export class PGliteEngineInstance implements EngineInstance {
           this.database = await PGlite.create({
             ...(this.dataDir === "memory://" ? {} : { dataDir: this.dataDir }),
             loadDataDir: new Blob([payload.slice().buffer as ArrayBuffer]),
+            parsers: temporalParsers,
           });
         } catch (cause) {
           if (isExistingDatabaseLoadError(cause)) {
@@ -115,7 +123,9 @@ export class PGliteEngineInstance implements EngineInstance {
           throw cause;
         }
       } else {
-        this.database = await PGlite.create(this.dataDir);
+        this.database = await PGlite.create(this.dataDir, {
+          parsers: temporalParsers,
+        });
       }
       this.state = "started";
     } catch (cause) {
@@ -209,13 +219,11 @@ export class PGliteEngineInstance implements EngineInstance {
                   );
                 });
               }
-              const result = await database.query(
+              return database.query(
                 payload.sql,
                 payload.params,
                 payload.rowMode ? { rowMode: payload.rowMode } : undefined,
               );
-              this.updateTransactionOwner(session.id, payload.sql);
-              return result;
             },
           ),
         };
@@ -268,10 +276,12 @@ export class PGliteEngineInstance implements EngineInstance {
     this.requireStarted();
     this.requireSession(session);
     try {
-      await this.runForSession(session.id, undefined, async (database) => {
+      await this.runExclusive(async () => {
+        this.requireStarted();
+        this.requireSession(session);
         if (this.transactionOwner === session.id) {
           try {
-            await database.query("ROLLBACK");
+            await this.requireDatabase().query("ROLLBACK");
           } catch (cause) {
             this.state = "failed";
             throw this.toOperationError(cause, "postgres-rollback-failed");
@@ -402,8 +412,9 @@ export class PGliteEngineInstance implements EngineInstance {
           "PostgreSQL operation was cancelled before execution.",
         );
       }
+      const database = this.requireDatabase();
       try {
-        return await action(this.requireDatabase());
+        return await action(database);
       } catch (cause) {
         if (
           cause instanceof EngineRuntimeError ||
@@ -411,26 +422,12 @@ export class PGliteEngineInstance implements EngineInstance {
         )
           throw cause;
         throw this.toOperationError(cause);
+      } finally {
+        this.transactionOwner = database.isInTransaction()
+          ? sessionId
+          : undefined;
       }
     });
-  }
-
-  private updateTransactionOwner(sessionId: SessionId, sql: string): void {
-    const command = transactionCommand(sql);
-    if (command === "begin") {
-      if (this.transactionOwner !== undefined) {
-        throw new EngineRuntimeError(
-          "instance-not-started",
-          "A different session already owns the PostgreSQL transaction.",
-        );
-      }
-      this.transactionOwner = sessionId;
-    } else if (
-      (command === "commit" || command === "rollback") &&
-      this.transactionOwner === sessionId
-    ) {
-      this.finishTransaction();
-    }
   }
 
   private finishTransaction(): void {
@@ -711,27 +708,6 @@ function requireSchemaPayload(value: unknown): {
     );
   }
   return { schema, table: table as string | null };
-}
-
-function transactionCommand(
-  sql: string,
-): "begin" | "commit" | "rollback" | undefined {
-  const withoutLeadingComments = sql
-    .replace(/^\s*(?:(?:--[^\n]*(?:\n|$))|(?:\/\*[\s\S]*?\*\/))*\s*/, "")
-    .trim();
-  if (/^(?:BEGIN|START\s+TRANSACTION)(?:\s|;|$)/i.test(withoutLeadingComments))
-    return "begin";
-  if (
-    /^(?:COMMIT|END)(?:\s+(?:WORK|TRANSACTION))?\s*;?$/i.test(
-      withoutLeadingComments,
-    )
-  )
-    return "commit";
-  if (
-    /^ROLLBACK(?:\s+(?:WORK|TRANSACTION))?\s*;?$/i.test(withoutLeadingComments)
-  )
-    return "rollback";
-  return undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

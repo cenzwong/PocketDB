@@ -149,6 +149,12 @@ try {
   const quota = await withBrowser(async (browser) => {
     const page = await browser.page(url);
     await page.wait("Boolean(window.__keyValuePersistenceProbe)");
+    assert.deepEqual(
+      await page.evaluate(
+        "window.__keyValuePersistenceProbe.runCancellationProbe()",
+      ),
+      { code: "request-aborted", ping: "PONG", health: "healthy" },
+    );
     await page.command("Storage.overrideQuotaForOrigin", {
       origin: new URL(url).origin,
       quotaSize: 1_048_576,

@@ -66,7 +66,7 @@ describe("SQLite engine adapter", () => {
       instance.execute(session, { operation: "query", payload: { sql } });
 
     await query(first, "CREATE TABLE entries (value TEXT)");
-    const begin = query(first, "BEGIN");
+    const begin = query(first, "-- annotated\nBEGIN");
     await expect(
       query(second, "INSERT INTO entries VALUES ('other')"),
     ).rejects.toMatchObject({ code: "sqlite-session-busy" });

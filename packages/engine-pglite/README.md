@@ -4,11 +4,11 @@
 
 ## Operations
 
-- `query`: SQL text, positional parameters, and object or array row mode.
+- `query`: SQL text, positional parameters, and object or array row mode. Dates and timestamps are returned as PostgreSQL text, preserving fractional precision.
 - `schema`: column metadata from `information_schema` for a schema and optional table.
 - `describe-query`: parameter and result-field metadata.
 
-Transactions are scoped to the session that issues `BEGIN`. While that transaction is active, another session receives `postgres-session-busy`; retry its request after the owner commits or rolls back. This fail-fast response keeps the worker's serialized RPC channel available to the transaction owner. Closing the owner session or stopping the instance rolls back its active transaction.
+Transactions are scoped to the session that issues `BEGIN`. While that transaction is active, another session receives `postgres-session-busy`; retry its request after the owner commits or rolls back. This fail-fast response keeps the worker's serialized RPC channel available to the transaction owner. Closing the owner session or stopping the instance rolls back its active transaction. Other sessions can close while the transaction is active.
 
 Instances default to `memory://`. Set `dataDir` to a stable `idb://<name>` value to persist the database in IndexedDB across worker or page reloads. The worker holds an exclusive Web Lock keyed by that data directory until the PGlite database closes. A second cooperative tab or worker receives `postgres-storage-already-owned`; after the owner closes, another worker can open the same data directory. Use a different directory per instance to isolate stored databases.
 

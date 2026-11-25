@@ -1,3 +1,4 @@
+import { KeyValueEngineAdapter } from "../src";
 import {
   WorkerEngineAdapter,
   type EngineSession,
@@ -12,6 +13,7 @@ declare global {
       start: (dataDir: string) => Promise<void>;
       execute: (operation: string, payload?: unknown) => Promise<unknown>;
       exportSnapshot: () => Promise<number[]>;
+      runCancellationProbe: () => Promise<unknown>;
       runRollbackProbe: () => Promise<unknown>;
       stop: () => Promise<void>;
       tryStart: (
@@ -135,6 +137,36 @@ async function tryStart(
   }
 }
 
+async function runCancellationProbe(): Promise<unknown> {
+  const id = crypto.randomUUID();
+  const instance = new KeyValueEngineAdapter().createInstance(
+    { dataDir: `idb://${id}` },
+    id,
+  );
+  await instance.start();
+  try {
+    const owner = await instance.openSession({
+      sessionId: id,
+      instanceId: id,
+      access: "owner",
+    });
+    const code = await instance
+      .execute(owner, {
+        operation: "PING",
+        signal: AbortSignal.abort(),
+      })
+      .then(
+        () => "success",
+        (cause: unknown) =>
+          cause instanceof Error && "code" in cause ? cause.code : undefined,
+      );
+    const ping = await instance.execute(owner, { operation: "PING" });
+    return { code, ping: ping.value, health: (await instance.health()).status };
+  } finally {
+    await instance.stop();
+  }
+}
+
 async function runRollbackProbe(): Promise<unknown> {
   const seed = crypto.randomUUID().replaceAll("-", "");
   const dataDir = `idb://pocketdb-kv-snapshot-rollback-${seed}`;
@@ -239,6 +271,7 @@ window.__keyValuePersistenceProbe = {
   execute,
   exportSnapshot,
   runRollbackProbe,
+  runCancellationProbe,
   stop,
   tryStart,
 };

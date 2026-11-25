@@ -49,6 +49,7 @@ export async function createPostgresBridge(
     resolveDisconnected = resolve;
   });
   const server = createServer((socket) => {
+    socket.on("error", () => socket.destroy());
     if (activeSocket || stopped) {
       socket.end(
         errorResponse(
@@ -59,10 +60,11 @@ export async function createPostgresBridge(
       return;
     }
     activeSocket = socket;
-    activeCleanup = handleSocket(socket, client).catch(() => socket.destroy());
-    socket.once("close", () => {
-      if (activeSocket === socket) activeSocket = undefined;
-    });
+    activeCleanup = handleSocket(socket, client)
+      .catch(() => socket.destroy())
+      .finally(() => {
+        activeSocket = undefined;
+      });
   });
   await new Promise((resolve, reject) => {
     server.once("error", reject);
@@ -182,6 +184,7 @@ async function handleSocket(socket, client) {
     }
   });
   socket.once("close", async () => {
+    await chain.catch(() => undefined);
     try {
       if (transaction !== "I") await client.query("ROLLBACK");
     } catch {
@@ -424,7 +427,8 @@ async function runQuery(
       );
     }
     const result = await client.query(sql, params, { rowMode: "array" });
-    if (/^\s*begin\b/i.test(sql)) setTransaction("T");
+    if (result.command === "BEGIN" || /^\s*begin\b/i.test(sql))
+      setTransaction("T");
     else if (/^\s*(commit|rollback)\b/i.test(sql)) setTransaction("I");
     if (simpleQuery && Array.isArray(result.rows)) {
       const fields = result.fields ?? [];

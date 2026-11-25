@@ -38,6 +38,7 @@ export async function createRespBridge(
     resolveDisconnected = resolve;
   });
   const server = createServer((socket) => {
+    socket.on("error", () => socket.destroy());
     if (activeSocket || stopped) {
       socket.end(error("ERR this invitation already has a local Redis client"));
       return;
