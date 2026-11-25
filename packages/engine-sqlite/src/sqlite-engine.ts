@@ -204,18 +204,23 @@ export class SqliteEngineInstance implements EngineInstance {
         "Read-only SQLite sessions accept a single SELECT statement only.",
       );
     }
-    if (this.transactionOwner && this.transactionOwner !== session.id) {
-      throw new EngineOperationError(
-        "sqlite-session-busy",
-        "Another session owns an active SQLite transaction; retry after it completes.",
-      );
-    }
     if (request.signal?.aborted)
       throw new EngineRuntimeError(
         "request-aborted",
         "SQLite operation was cancelled before execution.",
       );
     return this.runExclusive(() => {
+      if (this.transactionOwner && this.transactionOwner !== session.id) {
+        throw new EngineOperationError(
+          "sqlite-session-busy",
+          "Another session owns an active SQLite transaction; retry after it completes.",
+        );
+      }
+      if (request.signal?.aborted)
+        throw new EngineRuntimeError(
+          "request-aborted",
+          "SQLite operation was cancelled before execution.",
+        );
       try {
         const rows = this.requireDatabase().exec({
           sql: payload.sql,
@@ -402,8 +407,13 @@ export class SqliteEngineInstance implements EngineInstance {
       .exec(sql)?.[1]
       ?.toLowerCase();
     if (command === "begin") this.transactionOwner = sessionId;
+    const rollbackToSavepoint = /^\s*ROLLBACK(?:\s+TRANSACTION)?\s+TO\b/i.test(
+      sql,
+    );
     if (
-      (command === "commit" || command === "end" || command === "rollback") &&
+      (command === "commit" ||
+        command === "end" ||
+        (command === "rollback" && !rollbackToSavepoint)) &&
       this.transactionOwner === sessionId
     )
       this.transactionOwner = undefined;

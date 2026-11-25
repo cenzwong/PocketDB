@@ -9,6 +9,7 @@ const webRoot = resolve(new URL("..", import.meta.url).pathname);
 const dist = resolve(webRoot, "dist");
 const prefix = "/PocketDB/";
 await stat(resolve(dist, "index.html"));
+await stat(resolve(dist, "distributed.html"));
 
 const types = new Map([
   [".css", "text/css; charset=utf-8"],

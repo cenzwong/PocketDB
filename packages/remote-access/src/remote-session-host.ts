@@ -306,6 +306,10 @@ export class RemoteSessionHost {
       access: auth.access,
       principal: auth.clientId,
     });
+    if (this.closed) {
+      await this.runtime.closeSession(session.id);
+      return;
+    }
     this.sessions.set(session.id, {
       instanceId: auth.instanceId,
       engineId: auth.engineId,

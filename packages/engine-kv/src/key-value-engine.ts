@@ -519,7 +519,7 @@ export class KeyValueEngineInstance implements EngineInstance {
     let matchingCount = 0;
     let hasMore = false;
     for (const key of this.values.keys()) {
-      if (!matcher.test(key)) continue;
+      if (!matcher(key)) continue;
       if (matchingCount >= cursor) {
         if (matching.length === count) {
           hasMore = true;
@@ -1098,14 +1098,28 @@ function requireStringOption(value: unknown, operation: string): string {
   return value;
 }
 
-function compileGlob(pattern: string): RegExp {
-  let source = "^";
-  for (const character of pattern) {
-    if (character === "*") source += "[\\s\\S]*";
-    else if (character === "?") source += "[\\s\\S]";
-    else source += character.replace(/[|\\{}()[\]^$+?.]/g, "\\$&");
-  }
-  return new RegExp(`${source}$`);
+function compileGlob(pattern: string): (value: string) => boolean {
+  return (value) => {
+    let previous = new Uint8Array(value.length + 1);
+    previous[0] = 1;
+    for (let patternIndex = 0; patternIndex < pattern.length; patternIndex++) {
+      const token = pattern[patternIndex];
+      const current = new Uint8Array(value.length + 1);
+      if (token === "*") {
+        current[0] = previous[0];
+        for (let index = 1; index <= value.length; index++)
+          current[index] = previous[index] || current[index - 1] ? 1 : 0;
+      } else {
+        for (let index = 1; index <= value.length; index++)
+          current[index] =
+            previous[index - 1] && (token === "?" || token === value[index - 1])
+              ? 1
+              : 0;
+      }
+      previous = current;
+    }
+    return previous[value.length] === 1;
+  };
 }
 
 function cloneValue(value: Uint8Array | undefined): Uint8Array | null {

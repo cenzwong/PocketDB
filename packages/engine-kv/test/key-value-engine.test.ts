@@ -337,6 +337,17 @@ describe("in-memory key-value commands", () => {
     await instance.stop();
   });
 
+  it("matches adversarial SCAN globs without regex backtracking", async () => {
+    const { execute, instance } = await createEngine();
+    const key = "a".repeat(80);
+    await execute("SET", [key, "value"]);
+    const pattern = `${"*a".repeat(20)}b`;
+    await expect(execute("SCAN", ["0", "MATCH", pattern])).resolves.toEqual({
+      value: ["0", []],
+    });
+    await instance.stop();
+  });
+
   it("enforces the logical memory budget and keeps rejected MSET batches atomic", async () => {
     const { execute, instance } = await createEngine({ maxMemoryBytes: 260 });
     await execute("MSET", ["a", "x", "b", "y"]);

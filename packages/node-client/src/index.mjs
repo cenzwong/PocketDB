@@ -65,7 +65,11 @@ export async function connectNode(
           channelTimeoutMs,
           attemptSignal,
         );
-        const offer = await signaling.receiveDescription(
+        const channelResultPromise = channelPromise.then(
+          (channel) => ({ channel }),
+          (error) => ({ error }),
+        );
+        const offerPromise = signaling.receiveDescription(
           invitation.roomId,
           "offer",
           {
@@ -73,6 +77,13 @@ export async function connectNode(
             signal: attemptSignal,
           },
         );
+        const offer = await Promise.race([
+          offerPromise,
+          channelResultPromise.then(({ error }) => {
+            if (error) throw error;
+            return new Promise(() => {});
+          }),
+        ]);
         await currentPeer.setRemoteDescription(offer);
         await currentPeer.setLocalDescription(await currentPeer.createAnswer());
         if (!currentPeer.localDescription) {
@@ -88,7 +99,9 @@ export async function connectNode(
           currentPeer.localDescription,
           attemptSignal,
         );
-        const channel = await channelPromise;
+        const channelResult = await channelResultPromise;
+        if ("error" in channelResult) throw channelResult.error;
+        const { channel } = channelResult;
         await waitForChannelOpen(
           channel,
           currentPeer,
