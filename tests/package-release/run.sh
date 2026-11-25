@@ -22,7 +22,7 @@ test -f "$tarball"
 tar -tzf "$tarball" > "$artifact_dir/tarball-files.txt"
 shasum -a 512 "$tarball" > "$artifact_dir/sha512.txt"
 
-npm init -y --prefix "$consumer_dir" >/dev/null
+(cd "$consumer_dir" && npm init -y >/dev/null)
 npm install --prefix "$consumer_dir" --cache "$consumer_dir/npm-cache" \
   --no-audit --no-fund --ignore-scripts "$tarball" \
   > "$artifact_dir/install.log" 2>&1
