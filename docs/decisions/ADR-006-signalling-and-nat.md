@@ -24,6 +24,6 @@ Document that signalling sees addresses and SDP metadata and TURN sees traffic v
 
 ## Evidence
 
-- [TASK-003 manual physical baseline](../../artifacts/task-003-webrtc/README.md)
-- [TASK-004 discovery/NAT matrix](../../artifacts/task-004-discovery/README.md)
-- [TASK-026 discovery integration and configuration](../../artifacts/task-026-discovery/README.md)
+- [TASK-003 manual physical baseline](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-003-webrtc/README.md)
+- [TASK-004 discovery/NAT matrix](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-004-discovery/README.md)
+- [TASK-026 discovery integration and configuration](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-026-discovery/README.md)

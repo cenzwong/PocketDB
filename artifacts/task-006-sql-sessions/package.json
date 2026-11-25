@@ -1,8 +1,0 @@
-{
-  "name": "task-006-sql-sessions",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "@electric-sql/pglite": "0.6.0"
-  }
-}

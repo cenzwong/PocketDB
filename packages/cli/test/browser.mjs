@@ -8,7 +8,7 @@ import { promisify } from "node:util";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
-import { withBrowser } from "../../../artifacts/spike-support/chromium.mjs";
+import { withBrowser } from "../../../tests/support/chromium.mjs";
 import pg from "pg";
 import { createClient, RESP_TYPES } from "redis";
 
@@ -501,13 +501,18 @@ try {
       readWriteInvitationDenied: true,
     };
   });
-  const postgresDir = resolve(repo, "artifacts/task-046-postgres-bridge");
-  const redisDir = resolve(repo, "artifacts/task-047-resp-bridge");
-  const lifecycleDir = resolve(repo, "artifacts/task-048-cli-bridge-lifecycle");
+  const postgresDir = resolve(repo, "test-results/task-046-postgres-bridge");
+  const redisDir = resolve(repo, "test-results/task-047-resp-bridge");
+  const lifecycleDir = resolve(
+    repo,
+    "test-results/task-048-cli-bridge-lifecycle",
+  );
+  const pythonDir = resolve(repo, "test-results/task-049-python-drivers");
   await Promise.all([
     mkdir(postgresDir, { recursive: true }),
     mkdir(redisDir, { recursive: true }),
     mkdir(lifecycleDir, { recursive: true }),
+    ...(pythonIntegration ? [mkdir(pythonDir, { recursive: true })] : []),
   ]);
   const common = {
     node: result.node,
@@ -530,11 +535,8 @@ try {
     ),
     ...(pythonIntegration
       ? [
-          mkdir(resolve(repo, "artifacts/task-049-python-drivers"), {
-            recursive: true,
-          }),
           writeFile(
-            resolve(repo, "artifacts/task-049-python-drivers/results.json"),
+            resolve(pythonDir, "results.json"),
             `${JSON.stringify({ ...common, postgres: result.pythonPostgres, redis: result.pythonRedis }, null, 2)}\n`,
           ),
         ]

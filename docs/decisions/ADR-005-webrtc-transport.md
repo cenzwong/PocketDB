@@ -27,6 +27,6 @@ Implement bounded buffering, disconnect settlement and explicit unknown mutation
 - [TASK-024 transport contract and in-process adapter](../../packages/transport/README.md)
 - The WebRTC adapter's local Chromium integration passed ordered delivery at 0-, 1- and 16,384-byte message boundaries, rejected oversized outbound messages, and reported peer disconnects. This same-machine probe establishes adapter behavior only; it does not select or certify a direct versus relayed path.
 - [WebRTC adapter limits and direct/relay behavior](../../packages/transport/README.md#webrtc-data-channels)
-- [TASK-003 browser peers](../../artifacts/task-003-webrtc/README.md)
-- [TASK-004 discovery and NAT](../../artifacts/task-004-discovery/README.md)
-- [TASK-007 Node transport](../../artifacts/task-007-node-webrtc/README.md)
+- [TASK-003 browser peers](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-003-webrtc/README.md)
+- [TASK-004 discovery and NAT](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-004-discovery/README.md)
+- [TASK-007 Node transport](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-007-node-webrtc/README.md)

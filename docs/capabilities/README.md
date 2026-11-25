@@ -30,3 +30,6 @@ PostgreSQL clients can call `schema()` for column names, types, nullability and
 defaults, and `describeQuery()` for parameter and result-field type OIDs.
 Returned OIDs are PostgreSQL type identifiers; they are not a complete schema
 registry or a promise of identical type support across PGlite versions.
+
+The versioned JSON contracts in `v1/` are deliberately tracked so client
+consumers can resolve a capability document at a pinned source revision.

@@ -1,9 +1,0 @@
-{
-  "name": "task-009-resp",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "node-datachannel": "0.33.6",
-    "redis": "6.4.0"
-  }
-}

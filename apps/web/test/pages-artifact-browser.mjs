@@ -3,7 +3,7 @@ import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createServer } from "node:http";
 import { extname, resolve, sep } from "node:path";
-import { withBrowser } from "../../../artifacts/spike-support/chromium.mjs";
+import { withBrowser } from "../../../tests/support/chromium.mjs";
 
 const webRoot = resolve(new URL("..", import.meta.url).pathname);
 const dist = resolve(webRoot, "dist");

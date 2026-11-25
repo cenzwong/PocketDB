@@ -24,10 +24,10 @@ TASK-041 must test supported stable versions and feature combinations, including
 
 ## Evidence
 
-- [TASK-002 browser matrix](../../artifacts/task-002-static-worker/README.md)
-- [TASK-005 PGlite matrix](../../artifacts/task-005-persistence/README.md)
-- [TASK-010 lifecycle matrix](../../artifacts/task-010-host-lifecycle/README.md)
-- [TASK-055 SQLite and DuckDB-Wasm matrix](../../artifacts/task-055-static-sqlite-duckdb/README.md)
+- [TASK-002 browser matrix](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-002-static-worker/README.md)
+- [TASK-005 PGlite matrix](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-005-persistence/README.md)
+- [TASK-010 lifecycle matrix](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-010-host-lifecycle/README.md)
+- [TASK-055 SQLite and DuckDB-Wasm matrix](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-055-static-sqlite-duckdb/README.md)
 - [TASK-056 SQLite adapter and fallback matrix](../../packages/engine-sqlite/README.md)
 - [TASK-057 DuckDB-Wasm adapter and browser contract](../../packages/engine-duckdb/README.md)
 - [Distributed Mode console and compatibility evidence](../guides/distributed-mode.md): Chrome Canary 160.0.8181.0 on macOS 27.0.1, two same-machine tabs; development evidence only, not a stable-version support claim.

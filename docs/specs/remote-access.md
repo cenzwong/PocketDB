@@ -47,4 +47,4 @@ The browser client accepts the invitation link and signaling endpoint separately
 - Security tests cover mismatched host or peer identity, expired and revoked invitations, read-only write denial, resource limits and log redaction.
 - Browser integration covers join, read/write, loss of host, signalling outage, reconnect and interrupted transactions. Verify independently on physical devices and realistic networks for M2 and M3.
 
-See [handoff feasibility tickets and exit criteria](../../project/TECHNICAL_SPIKES.md) and [milestone evidence](../../project/MILESTONES.md).
+See [handoff feasibility tickets and exit criteria](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/project/TECHNICAL_SPIKES.md) and [milestone evidence](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/project/MILESTONES.md).

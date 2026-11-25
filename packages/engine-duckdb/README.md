@@ -16,11 +16,11 @@ The generated read-only and read-write capability documents are in [`docs/capabi
 
 The TASK-055 static-hosting probe measured DuckDB-Wasm 1.32.0 in Chrome Canary 160.0.8181.0 on macOS 27.0.1 arm64. The MVP worker and WASM loaded under a project subpath without cross-origin isolation, and an OPFS database survived checkpoint, close and worker reopen. The built WASM was 39.4 MB raw / 8.8 MB gzip. DuckDB remains optional and lazy-loaded for this reason.
 
-TASK-057's import and query contract is exercised in memory mode by `pnpm --filter @pocketdb/engine-duckdb test:browser`; its captured result is in [`artifacts/task-057-duckdb-adapter`](../../artifacts/task-057-duckdb-adapter/README.md). This is one local Chromium build on one Mac. Stable Chrome/Edge, Firefox, Safari, mobile, persistent storage and threaded DuckDB are not certified.
+TASK-057's import and query contract is exercised in memory mode by `pnpm --filter @pocketdb/engine-duckdb test:browser`; its captured result is in [`artifacts/task-057-duckdb-adapter`](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-057-duckdb-adapter/README.md). This is one local Chromium build on one Mac. Stable Chrome/Edge, Firefox, Safari, mobile, persistent storage and threaded DuckDB are not certified.
 
 ## References
 
 - [DuckDB-Wasm data ingestion](https://duckdb.org/docs/clients/wasm/data_ingestion)
 - [DuckDB-Wasm querying and Arrow results](https://duckdb.org/docs/current/clients/wasm/query)
 - [DuckDB-Wasm OPFS instantiation and checkpointing](https://duckdb.org/docs/api/wasm/instantiation)
-- [TASK-055 SQLite and DuckDB static-hosting probe](../../artifacts/task-055-static-sqlite-duckdb/README.md)
+- [TASK-055 SQLite and DuckDB static-hosting probe](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-055-static-sqlite-duckdb/README.md)

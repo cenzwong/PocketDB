@@ -2,7 +2,7 @@
 
 `@pocketdb/engine-yjs` is the first typed, local replica API for Distributed
 Mode. It uses Yjs 13.6.33, the version measured by
-[TASK-050](../../artifacts/task-050-yjs-probe/README.md). Hosted SQL and
+[TASK-050](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-050-yjs-probe/README.md). Hosted SQL and
 key-value APIs remain separate; this package does not translate SQL into CRDT
 operations.
 

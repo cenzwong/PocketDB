@@ -41,4 +41,4 @@ Select adapters using feasibility and actual workloads. The Hosted engine contra
 
 Provide machine-readable capabilities, structured discovery and permission-scoped access through the SDK and MCP. An authorized agent must be able to connect or provision through the supported surface, inspect supported schema/features, execute allowed operations and receive structured results and errors. Verify authorization with an executable example. A direct Python SDK and generalized infrastructure service contracts require separate scope decisions.
 
-See the [milestone gates](../../project/MILESTONES.md) for evidence owners and the [ADR backlog](../../project/ADR_BACKLOG.md) for pending architectural choices.
+See [PROJECT.md](../../PROJECT.md#delivery-and-release-gates) for release gates and the [decision records](../decisions/README.md) for architectural choices.

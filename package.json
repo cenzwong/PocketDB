@@ -7,16 +7,17 @@
     "node": ">=24.0.0 <27"
   },
   "scripts": {
-    "format": "biome format --write apps packages",
-    "format:check": "biome format apps packages",
-    "lint": "biome lint apps packages",
-    "typecheck": "pnpm --filter @pocketdb/runtime typecheck && pnpm --filter @pocketdb/protocol typecheck && pnpm --filter @pocketdb/transport typecheck && pnpm --filter @pocketdb/client typecheck && pnpm --filter @pocketdb/engine-kv typecheck && pnpm --filter @pocketdb/engine-yjs typecheck && pnpm --filter @pocketdb/engine-pglite typecheck && pnpm --filter @pocketdb/engine-sqlite typecheck && pnpm --filter @pocketdb/engine-duckdb typecheck && pnpm --filter @pocketdb/remote-access typecheck && pnpm --filter @pocketdb/web typecheck && pnpm --filter @pocketdb/node-client typecheck && pnpm --filter @pocketdb/cli typecheck && pnpm --filter @pocketdb/mcp-server typecheck",
-    "test": "pnpm --filter @pocketdb/runtime test && pnpm --filter @pocketdb/protocol test && pnpm --filter @pocketdb/transport test && pnpm --filter @pocketdb/client test && pnpm --filter @pocketdb/engine-kv test && pnpm --filter @pocketdb/engine-yjs test && pnpm --filter @pocketdb/engine-pglite test && pnpm --filter @pocketdb/engine-sqlite test && pnpm --filter @pocketdb/engine-duckdb test && pnpm --filter @pocketdb/remote-access test && pnpm --filter @pocketdb/web test && pnpm --filter @pocketdb/node-client test && pnpm --filter @pocketdb/cli test && pnpm --filter @pocketdb/mcp-server test",
-    "test:browser": "pnpm --filter @pocketdb/runtime test:browser && pnpm --filter @pocketdb/protocol test:browser && pnpm --filter @pocketdb/transport test:browser && pnpm --filter @pocketdb/client test:browser && pnpm --filter @pocketdb/engine-kv test:browser && pnpm --filter @pocketdb/engine-yjs test:browser && pnpm --filter @pocketdb/engine-pglite test:browser && pnpm --filter @pocketdb/engine-sqlite test:browser && pnpm --filter @pocketdb/engine-duckdb test:browser && pnpm --filter @pocketdb/web test:browser && pnpm --filter @pocketdb/node-client test:browser && pnpm --filter @pocketdb/cli test:browser && pnpm --filter @pocketdb/mcp-server test:browser",
+    "format": "biome format --write apps packages tests",
+    "format:check": "biome format apps packages tests",
+    "lint": "biome lint apps packages tests",
+    "typecheck": "pnpm -r --workspace-concurrency=1 run typecheck",
+    "test": "pnpm -r --workspace-concurrency=1 run test",
+    "test:browser": "pnpm -r --workspace-concurrency=1 run test:browser",
     "test:pages": "pnpm --filter @pocketdb/web test:pages",
     "test:pages:artifact": "pnpm --filter @pocketdb/web test:pages:artifact",
     "build": "pnpm --filter @pocketdb/web build",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:board",
+    "check:board": "node tests/check-board.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.7",
@@ -24,7 +25,7 @@
     "vitest": "4.0.16"
   },
   "version": "1.0.0",
-  "description": "PocketDB is browser-native database infrastructure. Its product direction and engineering requirements are in [the engineering handoff](docs/handoff.md); the current project phase is summarized in [PROJECT.md](PROJECT.md).",
+  "description": "Run and share databases hosted in a browser.",
   "main": "index.js",
   "directories": {
     "doc": "docs"

@@ -2,7 +2,7 @@
 
 The [engineering handoff](../handoff.md) sets the product constraints. PocketDB must distribute a static site, execute hosted operations on the host device, keep default storage local, support replaceable engines and transports, and document availability and compatibility limits. Hosted Mode ships first. Distributed Mode has explicit replication semantics.
 
-The initial M0 decisions below are recorded as individual ADRs. Their evidence and limits define a conditional path to the first Hosted Mode release. Later bridge, CRDT, snapshot and distribution decisions remain in the [ADR backlog](../../project/ADR_BACKLOG.md).
+The initial M0 decisions below are recorded as individual ADRs. Their evidence and limits define a conditional path to the first Hosted Mode release. The original proposed decision sequence is preserved in the [ADR backlog](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/project/ADR_BACKLOG.md).
 
 | ADR | Decision | Record |
 | --- | --- | --- |
@@ -25,5 +25,6 @@ The initial M0 decisions below are recorded as individual ADRs. Their evidence a
 | ADR-017 — Licensing | Apache-2.0 selected; ownership and dependency audit before publication | [Accepted with release prerequisites](ADR-017-open-source-license.md) |
 | ADR-018 — Python SDK scope | Defer a direct SDK until a named consumer need exceeds verified driver, CLI and MCP paths | [Accepted](ADR-018-defer-direct-python-sdk.md); revisit on unmet workflow evidence |
 | ADR-019 — Infrastructure service scope | Keep existing narrow engine, transport, discovery and replica boundaries; defer a generalized service contract | [Accepted](ADR-019-defer-general-infrastructure-service-contracts.md); revisit with multi-service ownership evidence |
+| ADR-020 — Repository layout | Separate product, tests, experiments and archived evidence | [Accepted](ADR-020-repository-layout-and-archives.md) |
 
-TASK-012 accepted ADR-001 through ADR-010, ADR-014 and ADR-017 on 2026-11-24. This is a conditional feasibility pass for the static Hosted Mode path. Snapshot, native bridge, replication and package distribution ADRs are resolved in their later owning tickets. Native feasibility informs the initial shared contracts without making those bridges P0. See the [technical spike catalog](../../project/TECHNICAL_SPIKES.md) and [handoff sections 22–26](../handoff.md).
+TASK-012 accepted ADR-001 through ADR-010, ADR-014 and ADR-017 on 2026-11-24. This is a conditional feasibility pass for the static Hosted Mode path. Snapshot, native bridge, replication and package distribution ADRs are resolved in their later owning tickets. Native feasibility informs the initial shared contracts without making those bridges P0. See the [technical spike catalog](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/project/TECHNICAL_SPIKES.md) and [handoff sections 22–26](../handoff.md).

@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
-import { withBrowser } from "../../../artifacts/spike-support/chromium.mjs";
+import { withBrowser } from "../../../tests/support/chromium.mjs";
 
 const root = resolve(new URL("../../..", import.meta.url).pathname);
 const webRoot = resolve(root, "apps/web");
@@ -81,7 +81,10 @@ try {
           : bounded,
     },
   };
-  const artifactDirectory = resolve(root, "artifacts/task-057-duckdb-adapter");
+  const artifactDirectory = resolve(
+    root,
+    "test-results/task-057-duckdb-adapter",
+  );
   await mkdir(artifactDirectory, { recursive: true });
   await writeFile(
     resolve(artifactDirectory, "results.json"),

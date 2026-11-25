@@ -36,8 +36,8 @@ SSL negotiation is declined. Binary parameters/results, COPY, notifications, can
 ## Validation evidence
 
 - `pnpm --filter @pocketdb/cli test` — passed unit and lifecycle checks.
-- `pnpm --filter @pocketdb/cli test:browser` — passed with Chrome 160 and `node-postgres` 8.23.1; see [TASK-046 results](../../artifacts/task-046-postgres-bridge/results.json).
-- `POCKETDB_PYTHON=/path/to/pinned/python pnpm --filter @pocketdb/cli test:python:browser` — passed with Psycopg 3.3.9 and Chrome 160; see [TASK-049 results](../../artifacts/task-049-python-drivers/results.json).
+- `pnpm --filter @pocketdb/cli test:browser` — passed with Chrome 160 and `node-postgres` 8.23.1; see [TASK-046 results](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-046-postgres-bridge/results.json).
+- `POCKETDB_PYTHON=/path/to/pinned/python pnpm --filter @pocketdb/cli test:python:browser` — passed with Psycopg 3.3.9 and Chrome 160; see [TASK-049 results](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-049-python-drivers/results.json).
 
 ## Reversibility
 

@@ -38,9 +38,9 @@ Reconsider this decision only when a named use case cannot reasonably use the dr
 
 ## Evidence
 
-- [TASK-049 Python driver verification](../../board/done/TASK-049-verify-native-drivers-and-publish-integration-examples.md)
+- [TASK-049 Python driver verification](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/board/done/TASK-049-verify-native-drivers-and-publish-integration-examples.md)
 - [Python driver examples](../../examples/python/README.md)
 - [Native driver matrix](../compatibility/native-drivers.md)
-- [TASK-061 MCP tools](../../board/done/TASK-061-expose-authorized-database-operations-via-mcp.md)
-- [TASK-064 agent workflow](../../board/done/TASK-064-verify-an-agent-end-to-end-workflow.md)
+- [TASK-061 MCP tools](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/board/done/TASK-061-expose-authorized-database-operations-via-mcp.md)
+- [TASK-064 agent workflow](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/board/done/TASK-064-verify-an-agent-end-to-end-workflow.md)
 - [Engineering handoff, staged compatibility and agent integration](../handoff.md)

@@ -28,7 +28,7 @@ disconnect rollback, Redis binary round-trip, an unsupported command response,
 one-connection-per-invitation behavior, credential redaction and host-loss
 cleanup. Node evidence is recorded in the TASK-046, TASK-047 and TASK-048
 artifacts. Python evidence is generated at
-`artifacts/task-049-python-drivers/results.json` by:
+`test-results/task-049-python-drivers/results.json` by:
 
 ```sh
 POCKETDB_PYTHON=/path/to/python-with-pinned-drivers \

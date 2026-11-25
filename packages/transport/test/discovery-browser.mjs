@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
-import { withBrowser } from "../../../artifacts/spike-support/chromium.mjs";
+import { withBrowser } from "../../../tests/support/chromium.mjs";
 
 const root = resolve(new URL("../../..", import.meta.url).pathname);
 const webRoot = resolve(root, "apps/web");

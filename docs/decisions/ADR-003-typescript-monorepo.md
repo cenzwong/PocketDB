@@ -25,4 +25,4 @@ TASK-013 pins Node and pnpm, commits the lockfile, and validates a clean install
 ## Evidence
 
 - [Engineering handoff, workspace and build constraints](../handoff.md)
-- [Delivery plan](../../project/PROJECT_PLAN.md)
+- [Delivery plan](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/project/PROJECT_PLAN.md)

@@ -17,9 +17,10 @@ pnpm check
 pnpm test
 pnpm test:browser
 pnpm build
+pnpm test:pages:artifact
 ```
 
-`pnpm check` runs formatting, lint and TypeScript checks. `pnpm test:browser` launches the worker contract harness in Chrome Canary; set `POCKETDB_CHROMIUM` to use another Chromium executable. CI runs the install, static checks, unit tests and production build steps on pushes and pull requests.
+`pnpm check` runs formatting, lint, TypeScript and board checks. `pnpm test:browser` launches the worker contract harness in Chrome Canary; set `POCKETDB_CHROMIUM` to use another Chromium executable. CI runs these checks on pushes and pull requests. The workflow attaches logs and generated browser JSON from `test-results/` as `pocketdb-test-results` for 30 days. See the [manual verification scripts](../tests/README.md) and [historical archive](archive.md).
 
 ## Start the web entry point
 

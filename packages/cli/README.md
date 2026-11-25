@@ -113,11 +113,11 @@ remote disconnect closes the listener and returns code 4.
 signaling service, then invokes the executable as a child process for KV and
 PostgreSQL operations. It uses fresh single-peer invitations. The PostgreSQL
 wire acceptance connects `node-postgres` to two bridge processes; see the
-[TASK-046 report](../../artifacts/task-046-postgres-bridge/README.md) and
-[results](../../artifacts/task-046-postgres-bridge/results.json). Earlier CLI
-coverage is in [the TASK-045 result](../../artifacts/task-045-cli/results.json).
-RESP2 results are recorded in the [TASK-047 report](../../artifacts/task-047-resp-bridge/README.md)
-and [results](../../artifacts/task-047-resp-bridge/results.json). Lifecycle
+[TASK-046 report](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-046-postgres-bridge/README.md) and
+[results](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-046-postgres-bridge/results.json). Earlier CLI
+coverage is in [the TASK-045 result](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-045-cli/results.json).
+RESP2 results are recorded in the [TASK-047 report](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-047-resp-bridge/README.md)
+and [results](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-047-resp-bridge/results.json). Lifecycle
 evidence for port conflicts, Ctrl-C, host loss and cleanup is in the
-[TASK-048 report](../../artifacts/task-048-cli-bridge-lifecycle/README.md) and
-[results](../../artifacts/task-048-cli-bridge-lifecycle/results.json).
+[TASK-048 report](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-048-cli-bridge-lifecycle/README.md) and
+[results](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-048-cli-bridge-lifecycle/results.json).

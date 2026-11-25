@@ -20,4 +20,4 @@ Imports create a fresh database and switch the host only after opening succeeds.
 | Chrome Canary 160.0.8181.0, macOS 27.0.1 arm64 | Measured: pass            | Measured: pass, including worker restart | Not enabled; pass                   | `memory://` query pass                                                           |
 | Stable Chromium, Edge, Firefox, Safari, mobile | Not certified by TASK-056 | Not certified                            | Not required by tested SAH-pool VFS | Choose Memory when OPFS or Web Locks is absent; TASK-041 owns the version matrix |
 
-Run `pnpm --filter @pocketdb/engine-sqlite typecheck`, `pnpm --filter @pocketdb/engine-sqlite test`, and `pnpm --filter @pocketdb/engine-sqlite test:browser` from the repository root. The browser runner uses the browser selected by `artifacts/spike-support/chromium.mjs` and binds a loopback Vite server.
+Run `pnpm --filter @pocketdb/engine-sqlite typecheck`, `pnpm --filter @pocketdb/engine-sqlite test`, and `pnpm --filter @pocketdb/engine-sqlite test:browser` from the repository root. The browser runner uses the browser selected by `tests/support/chromium.mjs` and binds a loopback Vite server.

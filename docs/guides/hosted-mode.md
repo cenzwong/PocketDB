@@ -96,5 +96,5 @@ provider.
   user deletion and eviction.
 
 See [deployment requirements](../deployment.md),
-[browser support evidence](../../board/backlog/TASK-041-verify-browser-compatibility-limits-and-performance.md),
-and [release evidence requirements](../../project/RELEASE_PLAN.md).
+[browser support evidence](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/board/done/TASK-041-verify-browser-compatibility-limits-and-performance.md),
+and [release evidence requirements](../../PROJECT.md#delivery-and-release-gates).

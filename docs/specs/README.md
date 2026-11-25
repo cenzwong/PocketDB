@@ -9,4 +9,4 @@ These documents condense the required behavior in the [engineering handoff](../h
 | [Browser protocol v1](protocol-v1.md) | Versioned JSON envelopes, correlated messages, typed binary and SQL values, limits and fixtures |
 | [Later releases](later-releases.md) | Node.js, CLI and native bridges, CRDT replication, additional engines and agent access |
 
-The [project scope](../../project/PRODUCT_SCOPE.md) sets release boundaries. The [milestone gates](../../project/MILESTONES.md) and [release plan](../../project/RELEASE_PLAN.md) define how each milestone is verified.
+See [PROJECT.md](../../PROJECT.md#delivery-and-release-gates) for project scope and current release gates.

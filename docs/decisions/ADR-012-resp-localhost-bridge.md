@@ -36,8 +36,8 @@ The parser limits a command to eight bulk-string fields, 4 KiB per field, 8 KiB 
 ## Validation evidence
 
 - `pnpm --filter @pocketdb/cli test` — passed RESP framing and CLI lifecycle tests.
-- `pnpm --filter @pocketdb/cli test:browser` — passed with Node Redis 6.4.0 and Chrome 160; see [TASK-047 results](../../artifacts/task-047-resp-bridge/results.json).
-- `POCKETDB_PYTHON=/path/to/pinned/python pnpm --filter @pocketdb/cli test:python:browser` — passed with redis-py 8.2.0 in RESP2 mode and Chrome 160; see [TASK-049 results](../../artifacts/task-049-python-drivers/results.json).
+- `pnpm --filter @pocketdb/cli test:browser` — passed with Node Redis 6.4.0 and Chrome 160; see [TASK-047 results](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-047-resp-bridge/results.json).
+- `POCKETDB_PYTHON=/path/to/pinned/python pnpm --filter @pocketdb/cli test:python:browser` — passed with redis-py 8.2.0 in RESP2 mode and Chrome 160; see [TASK-049 results](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-049-python-drivers/results.json).
 
 ## Reversibility
 

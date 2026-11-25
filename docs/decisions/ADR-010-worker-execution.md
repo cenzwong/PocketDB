@@ -24,6 +24,6 @@ Worker termination must settle pending requests, release ownership after rollbac
 
 ## Evidence
 
-- [TASK-002 static worker matrix](../../artifacts/task-002-static-worker/README.md)
-- [TASK-005 PGlite worker/persistence](../../artifacts/task-005-persistence/README.md)
-- [TASK-010 lifecycle and container matrix](../../artifacts/task-010-host-lifecycle/README.md)
+- [TASK-002 static worker matrix](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-002-static-worker/README.md)
+- [TASK-005 PGlite worker/persistence](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-005-persistence/README.md)
+- [TASK-010 lifecycle and container matrix](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-010-host-lifecycle/README.md)

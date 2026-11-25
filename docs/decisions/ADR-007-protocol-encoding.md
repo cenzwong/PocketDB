@@ -24,8 +24,8 @@ TASK-023 defines the exact v1 envelope, version negotiation, typed payload repre
 
 ## Evidence
 
-- [TASK-003 request delivery](../../artifacts/task-003-webrtc/README.md)
-- [TASK-006 transaction outcomes](../../artifacts/task-006-sql-sessions/README.md)
-- [TASK-008 PostgreSQL wire fixture](../../artifacts/task-008-postgres-wire/README.md)
-- [TASK-009 RESP2 fixture](../../artifacts/task-009-resp/README.md)
+- [TASK-003 request delivery](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-003-webrtc/README.md)
+- [TASK-006 transaction outcomes](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-006-sql-sessions/README.md)
+- [TASK-008 PostgreSQL wire fixture](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-008-postgres-wire/README.md)
+- [TASK-009 RESP2 fixture](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-009-resp/README.md)
 - [Browser TypeScript client SDK](../../packages/client/README.md)

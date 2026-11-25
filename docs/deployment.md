@@ -9,7 +9,8 @@ the generated `assets/` directory beside `index.html`.
 
 The repository workflow in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
 checks out the repository, installs the pinned Node and pnpm versions, runs
-`pnpm check`, `pnpm test` and `pnpm build`, uploads `apps/web/dist`, and deploys
+`pnpm check`, `pnpm test`, `pnpm test:browser`, `pnpm build`, and
+`pnpm test:pages:artifact`. It uploads test reports and `apps/web/dist`, then deploys
 that artifact only after a successful push to `main`. Pull requests build and
 upload the site artifact without publishing it. The Vite build uses relative
 asset URLs so JavaScript, workers, PGlite WASM and data files load from the

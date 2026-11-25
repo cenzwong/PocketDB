@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport } from "@modelcontextprotocol/client/stdio";
-import { withBrowser } from "../../../artifacts/spike-support/chromium.mjs";
+import { withBrowser } from "../../../tests/support/chromium.mjs";
 
 const repo = resolve(new URL("../../..", import.meta.url).pathname);
 const webRoot = resolve(repo, "apps/web");
@@ -107,7 +107,10 @@ try {
     result.connectionLifecycle = "connect, inspect, disconnect";
     result.passed = true;
   });
-  const artifactDirectory = resolve(repo, "artifacts/task-061-mcp-operations");
+  const artifactDirectory = resolve(
+    repo,
+    "test-results/task-061-mcp-operations",
+  );
   await mkdir(artifactDirectory, { recursive: true });
   await writeFile(
     resolve(artifactDirectory, "results.json"),

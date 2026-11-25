@@ -14,7 +14,7 @@ Automate GitHub Pages deployment.
 # Context
 
 - **Milestone** M3 · Hackathon-ready release
-- **Parent epic** EPIC-12. See the [epic catalog](../../project/epics/README.md).
+- **Parent epic** EPIC-12. See the [epic catalog](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/project/epics/README.md).
 - **Source** [Engineering handoff](../../docs/handoff.md), sections 29.
 - **Decisions** ADR-001, ADR-014
 - **Estimated effort** 3 engineer-days.
@@ -52,4 +52,8 @@ Repeat local validation on macOS 27.0.1 arm64, Node 25.8.1, pnpm 11.25.0 and Chr
 - `pnpm test:pages:artifact` — passed at `/PocketDB/`; PostgreSQL and key-value workers ran, and a direct invitation opened at the project path.
 - `git diff --check` — passed after the board evidence update.
 
-The live Pages acceptance remains unverified. GitHub `main` still points to the initial handoff commit; the prepared source and workflow are in the local `codex/publish-pocketdb-deployment` branch, which has not been published. The published repository has no workflow runs, and no deployed artifact/revision is available to smoke-test. Unblock by publishing this branch for review, merging the prepared source to `main`, selecting GitHub Actions in repository Pages settings, then recording the deployed revision and repeating the browser flow at the published URL. The local project-path probe does not substitute for the hosted-site check.
+The live Pages acceptance remains unverified. The work is under review in
+[PR #1](https://github.com/cenzwong/PocketDB/pull/1). After merging, select GitHub
+Actions in repository Pages settings, record the deployed revision, and repeat
+the worker and direct-invitation flow at the published URL. The project-path
+probe above exercises the local artifact.

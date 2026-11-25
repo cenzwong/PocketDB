@@ -24,6 +24,6 @@ TASK-014 owns reusable contract tests and instance isolation. PGlite transaction
 
 ## Evidence
 
-- [TASK-005 persistence and PGlite](../../artifacts/task-005-persistence/README.md)
-- [TASK-006 transaction and read-only behavior](../../artifacts/task-006-sql-sessions/README.md)
+- [TASK-005 persistence and PGlite](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-005-persistence/README.md)
+- [TASK-006 transaction and read-only behavior](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-006-sql-sessions/README.md)
 - [Engineering handoff, engine contract](../handoff.md)

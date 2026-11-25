@@ -24,7 +24,7 @@ TASK-019 remains responsible for testing the key-value production adapter. TASK-
 
 ## Evidence
 
-- [TASK-005 storage results](../../artifacts/task-005-persistence/README.md)
-- [TASK-002 OPFS worker probe](../../artifacts/task-002-static-worker/README.md)
-- [TASK-020 production adapter evidence](../../board/done/TASK-020-persist-browser-local-postgresql-instances.md)
+- [TASK-005 storage results](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-005-persistence/README.md)
+- [TASK-002 OPFS worker probe](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-002-static-worker/README.md)
+- [TASK-020 production adapter evidence](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/board/done/TASK-020-persist-browser-local-postgresql-instances.md)
 - [PGlite persistence matrix](../../packages/engine-pglite/README.md)

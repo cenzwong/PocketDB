@@ -24,6 +24,6 @@ TASK-040 and TASK-043 must verify the real project path, HTTPS, workers, WASM as
 
 ## Evidence
 
-- [TASK-002 probe](../../artifacts/task-002-static-worker/README.md)
-- [TASK-055 SQLite and DuckDB header-constrained probe](../../artifacts/task-055-static-sqlite-duckdb/README.md)
+- [TASK-002 probe](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-002-static-worker/README.md)
+- [TASK-055 SQLite and DuckDB header-constrained probe](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-055-static-sqlite-duckdb/README.md)
 - [Handoff deployment constraints](../handoff.md)

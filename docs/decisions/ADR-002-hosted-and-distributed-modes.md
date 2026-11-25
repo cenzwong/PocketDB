@@ -24,7 +24,7 @@ Hosted Mode limits availability to the host browser and device. TASK-050 must pr
 
 ## Evidence
 
-- [TASK-003 WebRTC probe](../../artifacts/task-003-webrtc/README.md)
-- [TASK-005 persistence probe](../../artifacts/task-005-persistence/README.md)
-- [TASK-006 SQL isolation probe](../../artifacts/task-006-sql-sessions/README.md)
-- [Product scope](../../project/PRODUCT_SCOPE.md)
+- [TASK-003 WebRTC probe](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-003-webrtc/README.md)
+- [TASK-005 persistence probe](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-005-persistence/README.md)
+- [TASK-006 SQL isolation probe](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-006-sql-sessions/README.md)
+- [Product scope](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/project/PRODUCT_SCOPE.md)

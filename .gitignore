@@ -3,3 +3,17 @@ dist/
 .vite/
 .DS_Store
 .pnpm-store/
+
+# Generated verification output and local build files
+/artifacts/
+/test-results/
+coverage/
+playwright-report/
+*.tgz
+*.log
+*.tsbuildinfo
+*.tmp
+*.swp
+*~
+__pycache__/
+/experiments/*/results.json

@@ -1,8 +1,0 @@
-{
-  "name": "task-010-host-lifecycle",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "node-datachannel": "0.33.6"
-  }
-}

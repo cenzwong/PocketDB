@@ -75,7 +75,7 @@ operations.
 
 ## Evidence
 
-- [TASK-050 probe and results](../../artifacts/task-050-yjs-probe/README.md)
+- [TASK-050 probe and results](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-050-yjs-probe/README.md)
 - [Yjs typed replica package](../../packages/engine-yjs/README.md)
 - [Native protocol message bound](../specs/protocol-v1.md)
 

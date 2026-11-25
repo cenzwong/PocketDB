@@ -52,4 +52,4 @@ device claim follows from the local browser result.
 | Two physical devices, cross-network ICE and TURN relay | Not exercised by this M5 harness; retained for product-end device acceptance. | Not verified. |
 
 Browser capability support remains staged under [ADR-014](../decisions/ADR-014-browser-support.md)
-and the [browser matrix task](../../board/backlog/TASK-041-verify-browser-compatibility-limits-and-performance.md).
+and the [browser matrix task](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/board/done/TASK-041-verify-browser-compatibility-limits-and-performance.md).

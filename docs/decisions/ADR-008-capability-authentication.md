@@ -25,9 +25,9 @@ TASK-028 validates the transcript on local browser WebRTC transports, URL handli
 ## Evidence
 
 - [Invitation v1 encoding and validation](../../packages/protocol/README.md) implements capability generation, scoped URI and fragment parsing, expiry checks, expected-target checks and fragment redaction. It does not replace the peer authentication transcript or host-side authorization checks.
-- [TASK-011 identity fixture and threat model](../../artifacts/task-011-peer-identity/README.md)
-- [TASK-028 browser authentication and revocation evidence](../../board/done/TASK-028-authenticate-peer-bound-sessions-and-revoke-access.md)
-- [TASK-029 permission matrix and enforcement evidence](../../board/done/TASK-029-enforce-engine-permissions-before-execution.md)
-- [TASK-030 authenticated request routing evidence](../../board/done/TASK-030-route-authenticated-remote-requests-to-engine-sessions.md)
-- [TASK-006 read-only control](../../artifacts/task-006-sql-sessions/README.md)
+- [TASK-011 identity fixture and threat model](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-011-peer-identity/README.md)
+- [TASK-028 browser authentication and revocation evidence](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/board/done/TASK-028-authenticate-peer-bound-sessions-and-revoke-access.md)
+- [TASK-029 permission matrix and enforcement evidence](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/board/done/TASK-029-enforce-engine-permissions-before-execution.md)
+- [TASK-030 authenticated request routing evidence](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/board/done/TASK-030-route-authenticated-remote-requests-to-engine-sessions.md)
+- [TASK-006 read-only control](https://github.com/cenzwong/PocketDB/blob/305098005dc63218e2822a7853c0b7c12b93b6e4/artifacts/task-006-sql-sessions/README.md)
 - [Engineering handoff, security requirements](../handoff.md)

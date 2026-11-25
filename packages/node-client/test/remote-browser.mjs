@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
-import { writeFile } from "node:fs/promises";
-import { withBrowser } from "../../../artifacts/spike-support/chromium.mjs";
+import { mkdir, writeFile } from "node:fs/promises";
+import { withBrowser } from "../../../tests/support/chromium.mjs";
 import { connectNode } from "../dist/index.js";
 
 const repo = resolve(new URL("../../..", import.meta.url).pathname);
@@ -126,8 +126,10 @@ try {
     await host.close();
     result.browser = version;
   });
+  const resultDirectory = resolve(repo, "test-results/task-044-node-client");
+  await mkdir(resultDirectory, { recursive: true });
   await writeFile(
-    resolve(repo, "artifacts/task-044-node-client/results.json"),
+    resolve(resultDirectory, "results.json"),
     `${JSON.stringify(result, null, 2)}\n`,
   );
   console.log(JSON.stringify(result, null, 2));

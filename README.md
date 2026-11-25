@@ -1,23 +1,42 @@
 # PocketDB
 
-PocketDB is browser-native database infrastructure. Its product direction and engineering requirements are in [the engineering handoff](docs/handoff.md); the current project phase is summarized in [PROJECT.md](PROJECT.md).
+PocketDB runs databases in your browser. Start a local instance, query it from
+the console, and invite another browser or a client application to connect over
+WebRTC. The static site delivers the app. Your browser runs the database and
+owns its storage.
 
-## Engineering documentation
+## Quick start
 
-- [Target architecture](docs/architecture/)
-- [Architecture decisions](docs/decisions/)
-- [Product and protocol specifications](docs/specs/)
-- [Hosted Mode guides](docs/guides/)
-- [Development setup](docs/development.md)
-- [Static hosting and deployment](docs/deployment.md)
-- [Third-party development dependency inventory](docs/third-party-dependencies.md)
+Use the Node.js version in [`.node-version`](.node-version) and the pnpm version
+in [`package.json`](package.json).
 
-## Project workflow
+```sh
+pnpm install --frozen-lockfile
+pnpm --filter @pocketdb/web dev
+```
 
-- Read [AGENTS.md](AGENTS.md) and [PROJECT.md](PROJECT.md) before taking project work.
-- Follow [docs/agent-workflow.md](docs/agent-workflow.md) to select and update tasks in `board/`.
-- New repositories can adopt the reusable scaffold in [`templates/agent-native-project/`](templates/agent-native-project/).
+Open the URL printed by Vite. Choose **Key-value**, select **Start**, and run
+`SET` with `["greeting", "hello"]`, followed by `GET` with `["greeting"]`.
+For SQL, start a **PostgreSQL** instance and run `SELECT 42 AS answer;`.
+Use the [Hosted Mode guide](docs/guides/hosted-mode.md) to connect a second client.
 
-## Application status
+## Capabilities
 
-M0 feasibility passed conditionally. The local browser console can start PostgreSQL and key-value engines in dedicated workers and display local results; M1 milestone verification remains in TASK-022. Remote access, release browser support and physical-device certification remain later gates. The [delivery plan](project/PROJECT_PLAN.md) maps the handoff to milestones and the [board](board/) tracks implementation and release evidence.
+- **Local databases** for key-value commands, PGlite PostgreSQL, SQLite, and DuckDB analytics. Available operations, storage, and import/export formats vary by engine. [Capability reference](docs/capabilities/README.md)
+- **Hosted Mode** for authenticated peer sessions with scoped invitations and host-side permission checks. Both peers need a compatible signaling endpoint. Keep the host browser open and awake while clients are connected. [Hosted Mode and networking](docs/guides/hosted-mode.md#invite-a-client)
+- **Distributed Mode** for invitation-authorized Yjs replicas that can edit offline and sync on reconnect. [Distributed Mode guide](docs/guides/distributed-mode.md)
+- **Client integrations** through the browser SDK, Node client, CLI, localhost PostgreSQL and RESP2 bridges, and MCP tools. [SDK guide](docs/guides/client-sdk.md), [CLI](packages/cli/README.md), [MCP guide](docs/guides/mcp.md)
+
+## Architecture
+
+The static app opens engine sessions in dedicated workers. The runtime defines
+engine contracts. Hosted clients send versioned requests over WebRTC, and the
+host authorizes each request before it reaches an engine session. Distributed
+Mode exchanges replica updates between participating browsers. [Architecture](docs/architecture/README.md)
+
+Run `pnpm build` to produce the static site in `apps/web/dist`.
+See [deployment](docs/deployment.md) for static hosting and verification,
+[development](docs/development.md) for contributor checks, and [PROJECT.md](PROJECT.md)
+for project scope and release status.
+
+PocketDB is licensed under [Apache-2.0](LICENSE).
