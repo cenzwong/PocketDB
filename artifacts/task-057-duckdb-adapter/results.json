@@ -1,10 +1,10 @@
 {
-  "measuredAt": "2026-11-24T22:26:55.989Z",
+  "measuredAt": "2026-11-25T07:22:00.799Z",
   "host": "darwin",
   "architecture": "arm64",
   "node": "v25.8.1",
-  "fixtureGeneratorBrowser": "Chrome/160.0.8181.0",
-  "browser": "Chrome/160.0.8181.0",
+  "fixtureGeneratorBrowser": "Chrome/160.0.8182.0",
+  "browser": "Chrome/160.0.8182.0",
   "outcome": {
     "ok": true,
     "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/160.0.0.0 Safari/537.36",

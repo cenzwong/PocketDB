@@ -43,4 +43,13 @@ On macOS 27.0.1 arm64, Node 25.8.1, pnpm 11.25.0, Chrome 160.0.8181.0:
 - `pnpm test:pages` — passed. Vite built the static artifact; Chrome served under `/PocketDB/`, ran SQL on the PostgreSQL worker, wrote/read a key-value value on its worker, and opened a generated invitation directly at `/PocketDB/` into client mode.
 - `git diff --check` — passed.
 
-The real Pages deployment acceptance remains unverified: this source tree is not published to GitHub `main`, Pages has not been configured to publish this workflow, and no deployed artifact/revision exists to smoke-test. The local project-path probe does not substitute for the hosted-site check. Unblock by publishing the prepared repository changes, selecting GitHub Actions in repository Pages settings, then recording the deployed revision and repeating the browser flow at the published URL.
+Repeat local validation on macOS 27.0.1 arm64, Node 25.8.1, pnpm 11.25.0 and Chrome 160.0.8182.0:
+
+- `pnpm check` — passed formatting, lint and all workspace typechecks.
+- `pnpm test` — passed all workspace unit suites, including Node-client build/import and CLI tests.
+- `pnpm test:browser` — passed the full browser integration matrix.
+- `pnpm build` — passed. Vite emitted dependency externalization and direct-eval warnings from PGlite; the build completed.
+- `pnpm test:pages:artifact` — passed at `/PocketDB/`; PostgreSQL and key-value workers ran, and a direct invitation opened at the project path.
+- `git diff --check` — passed after the board evidence update.
+
+The live Pages acceptance remains unverified. GitHub `main` still points to the initial handoff commit; the prepared source and workflow are in the local `codex/publish-pocketdb-deployment` branch, which has not been published. The published repository has no workflow runs, and no deployed artifact/revision is available to smoke-test. Unblock by publishing this branch for review, merging the prepared source to `main`, selecting GitHub Actions in repository Pages settings, then recording the deployed revision and repeating the browser flow at the published URL. The local project-path probe does not substitute for the hosted-site check.
