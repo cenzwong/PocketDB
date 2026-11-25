@@ -1,0 +1,159 @@
+{
+  "version": 1,
+  "engineId": "postgresql",
+  "access": "read-write",
+  "operations": [
+    "query",
+    "schema",
+    "describe-query"
+  ],
+  "readOnlyOperations": [
+    "query",
+    "schema",
+    "describe-query"
+  ],
+  "operationMetadata": [
+    {
+      "name": "query",
+      "allowedAccess": [
+        "read-only",
+        "read-write"
+      ],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "sql": {
+            "type": "string",
+            "minLength": 1
+          },
+          "params": {
+            "type": "array",
+            "items": {
+              "type": [
+                "null",
+                "boolean",
+                "number",
+                "string",
+                "array",
+                "object"
+              ],
+              "x-runtimeTypes": [
+                "undefined",
+                "bigint",
+                "ArrayBuffer",
+                "Uint8Array"
+              ]
+            }
+          },
+          "rowMode": {
+            "enum": [
+              "object",
+              "array"
+            ]
+          }
+        },
+        "required": [
+          "sql"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "required": [
+          "rows",
+          "fields"
+        ],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "description": "Rows with engine-defined values."
+          },
+          "fields": {
+            "type": "array",
+            "description": "PostgreSQL result-field metadata."
+          }
+        }
+      }
+    },
+    {
+      "name": "schema",
+      "allowedAccess": [
+        "read-only",
+        "read-write"
+      ],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "schema": {
+            "type": "string",
+            "default": "public"
+          },
+          "table": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "description": "Rows of SqlSchemaColumn values."
+          }
+        }
+      }
+    },
+    {
+      "name": "describe-query",
+      "allowedAccess": [
+        "read-only",
+        "read-write"
+      ],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "sql": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "sql"
+        ],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "required": [
+          "parameters",
+          "fields"
+        ],
+        "properties": {
+          "parameters": {
+            "type": "array",
+            "description": "Parameter PostgreSQL type OIDs."
+          },
+          "fields": {
+            "type": "array",
+            "description": "Result names and PostgreSQL type OIDs."
+          }
+        }
+      }
+    }
+  ],
+  "features": {
+    "parameterizedQueries": true,
+    "schemaInspection": true
+  }
+}

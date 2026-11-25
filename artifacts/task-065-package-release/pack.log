@@ -1,0 +1,13 @@
+package: @pocketdb/protocol@0.1.0
+Tarball Contents
+fixtures/v1-messages.json
+LICENSE
+package.json
+README.md
+src/capabilities.ts
+src/index.ts
+src/invitation.ts
+src/peer-authentication.ts
+src/protocol.ts
+Tarball Details
+/Users/cenzwong/Projects/PocketDB/artifacts/task-065-package-release/pocketdb-protocol-0.1.0.tgz

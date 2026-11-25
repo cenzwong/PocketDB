@@ -1,0 +1,27 @@
+{
+  "node": "v25.8.1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "browser": "Chrome/160.0.8181.0",
+  "lifecycle": {
+    "postgresql": {
+      "portConflictExit": 2,
+      "ctrlCExit": 0,
+      "remoteDisconnectExit": 4,
+      "remoteSocketClosed": true,
+      "portReleased": true
+    },
+    "resp": {
+      "portConflictExit": 2,
+      "ctrlCExit": 0,
+      "remoteDisconnectExit": [
+        4,
+        4,
+        4
+      ],
+      "localSocketsClosed": true,
+      "portsReleased": true
+    },
+    "credentialRedaction": true
+  }
+}

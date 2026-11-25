@@ -1,0 +1,36 @@
+{
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/160.0.0.0 Safari/537.36",
+  "events": [
+    {
+      "event": "connection-state",
+      "ms": 40118,
+      "state": "connecting"
+    },
+    {
+      "event": "local-signal-ready",
+      "ms": 40233,
+      "type": "answer"
+    },
+    {
+      "event": "connection-state",
+      "ms": 71722,
+      "state": "connected"
+    },
+    {
+      "event": "channel-open",
+      "ms": 71740,
+      "role": "host",
+      "maxMessageSize": 262144,
+      "sinceRemoteSignalMs": 31633
+    },
+    {
+      "event": "local-close-requested",
+      "ms": 183502
+    },
+    {
+      "event": "channel-close",
+      "ms": 183580
+    }
+  ],
+  "checks": []
+}

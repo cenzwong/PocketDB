@@ -1,0 +1,10 @@
+{
+  "name": "task-008-postgres-wire",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@electric-sql/pglite": "0.6.0",
+    "node-datachannel": "0.33.6",
+    "pg": "8.23.1"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "environment": {
+    "platform": "macOS",
+    "version": "27.0.1",
+    "architecture": "arm64",
+    "browser": "Chrome/160.0.8181.0"
+  },
+  "connector": "two local in-process pairs with a test-only preauthenticated host fixture",
+  "engines": [
+    "@pocketdb/engine-kv",
+    "@pocketdb/engine-pglite"
+  ],
+  "webApplicationImportedBySdk": false,
+  "checks": [
+    "key-value API preserves binary values",
+    "SQL parameters and binary query results preserve values",
+    "SQL failure returns a structured failed outcome",
+    "both typed clients close their remote sessions"
+  ],
+  "ok": true,
+  "limitations": [
+    "the test connector does not exercise signaling or peer authentication interoperability",
+    "cross-device and separate-network behavior are unverified",
+    "physical-device acceptance remains at TASK-043"
+  ]
+}

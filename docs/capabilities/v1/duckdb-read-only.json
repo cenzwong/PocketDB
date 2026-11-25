@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "engineId": "duckdb",
+  "access": "read-only",
+  "operations": ["query"],
+  "readOnlyOperations": ["query"],
+  "operationMetadata": [
+    {
+      "name": "query",
+      "allowedAccess": ["read-only", "read-write"],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "sql": { "type": "string", "minLength": 1 },
+          "params": {
+            "type": "array",
+            "items": {
+              "type": ["null", "boolean", "number", "string"],
+              "x-runtimeTypes": ["bigint", "Uint8Array"]
+            }
+          }
+        },
+        "required": ["sql"],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "required": ["rows", "columns", "format", "truncated", "rowCount"],
+        "properties": {
+          "rows": { "type": "array", "description": "JSON-compatible DuckDB rows." },
+          "columns": { "type": "array", "items": { "type": "string" } },
+          "format": { "const": "arrow-to-json" },
+          "truncated": { "type": "boolean" },
+          "rowCount": { "type": "integer", "minimum": 0 }
+        }
+      }
+    }
+  ],
+  "features": {
+    "analyticalSql": true,
+    "localDatasetIngestion": true,
+    "supportedDatasetFormats": "csv,json,parquet",
+    "resultFormat": "arrow-to-json",
+    "maxDatasetBytes": 33554432,
+    "maxResultRows": 10000,
+    "maxResultBytes": 8388608,
+    "maximumThreads": 1,
+    "persistentDataDir": false,
+    "persistence": "memory",
+    "browserRequirements": "secure-context",
+    "wasmVariant": "mvp-single-threaded",
+    "browserLoading": "lazy"
+  }
+}

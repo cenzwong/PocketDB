@@ -1,0 +1,44 @@
+{
+  "node": "v25.8.1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "kv": {
+    "operation": "SET/GET",
+    "value": "node-browser-roundtrip",
+    "passed": true
+  },
+  "sql": {
+    "parameterizedQuery": {
+      "rows": [
+        {
+          "client": "PocketDB Node SDK",
+          "runtime": "v25.8.1"
+        }
+      ],
+      "fields": [
+        {
+          "name": "client",
+          "dataTypeID": 25
+        },
+        {
+          "name": "runtime",
+          "dataTypeID": 25
+        }
+      ],
+      "command": "SELECT",
+      "affectedRows": 0,
+      "rowCount": 1
+    },
+    "passed": true
+  },
+  "timeout": {
+    "code": "request-timeout",
+    "outcome": "unknown"
+  },
+  "hostLoss": {
+    "state": "failed",
+    "laterOperation": "not-started",
+    "passed": true
+  },
+  "browser": "Chrome/160.0.8181.0"
+}

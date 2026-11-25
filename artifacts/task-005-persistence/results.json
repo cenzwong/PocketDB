@@ -1,0 +1,62 @@
+{
+  "url": "https://127.0.0.1:50957/PocketDB/",
+  "regular": {
+    "browser": "Chrome/160.0.8180.0",
+    "before": {
+      "usage": 0,
+      "quota": 10737418240,
+      "persisted": false,
+      "isolated": false
+    },
+    "after": {
+      "usage": 9335705,
+      "quota": 10746753945,
+      "persisted": false,
+      "isolated": false
+    },
+    "ownership": "Error: Database already owned by another tab",
+    "ownershipReleased": true,
+    "sql": "parameterized ' value",
+    "keyValue": "persisted-kv",
+    "snapshot": {
+      "bytes": 4554402,
+      "value": "parameterized ' value"
+    },
+    "citext": true
+  },
+  "private": {
+    "browser": "Chrome/160.0.8180.0",
+    "before": {
+      "usage": 0,
+      "quota": 10737418240,
+      "persisted": false,
+      "isolated": false
+    },
+    "after": {
+      "usage": 6848512,
+      "quota": 10744266752,
+      "persisted": false,
+      "isolated": false
+    },
+    "ownership": "Error: Database already owned by another tab",
+    "ownershipReleased": true,
+    "sql": "parameterized ' value",
+    "keyValue": "persisted-kv",
+    "snapshot": {
+      "bytes": 4554279,
+      "value": "parameterized ' value"
+    },
+    "citext": true,
+    "clearedAfterClose": true
+  },
+  "cappedQuota": {
+    "configuredQuota": 65536,
+    "reportedStorage": {
+      "usage": 0,
+      "quota": 10737418240,
+      "persisted": false,
+      "isolated": false
+    },
+    "exceededWrite": "QuotaExceededError"
+  }
+}

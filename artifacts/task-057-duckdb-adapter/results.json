@@ -1,0 +1,115 @@
+{
+  "measuredAt": "2026-11-24T22:26:55.989Z",
+  "host": "darwin",
+  "architecture": "arm64",
+  "node": "v25.8.1",
+  "fixtureGeneratorBrowser": "Chrome/160.0.8181.0",
+  "browser": "Chrome/160.0.8181.0",
+  "outcome": {
+    "ok": true,
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/160.0.0.0 Safari/537.36",
+    "browserCapabilities": {
+      "secureContext": true,
+      "opfs": true,
+      "webLocks": true,
+      "crossOriginIsolated": false
+    },
+    "bundle": "mvp-single-threaded",
+    "storageMode": "memory",
+    "limits": {
+      "maxDatasetBytes": 33554432,
+      "maxRows": 10000,
+      "maxResultBytes": 8388608,
+      "threads": 1
+    },
+    "imports": {
+      "csv": {
+        "tableName": "sales",
+        "format": "csv",
+        "rowCount": 3
+      },
+      "json": {
+        "tableName": "shipments",
+        "format": "json",
+        "rowCount": 3
+      },
+      "parquet": {
+        "tableName": "inventory",
+        "format": "parquet",
+        "rowCount": 3
+      }
+    },
+    "aggregates": {
+      "csv": {
+        "rows": [
+          {
+            "category": "books",
+            "total": 20
+          },
+          {
+            "category": "games",
+            "total": 20
+          }
+        ],
+        "columns": [
+          "category",
+          "total"
+        ],
+        "format": "arrow-to-json",
+        "truncated": false,
+        "rowCount": 2
+      },
+      "json": {
+        "rows": [
+          {
+            "region": "north",
+            "total": "5"
+          },
+          {
+            "region": "south",
+            "total": "4"
+          }
+        ],
+        "columns": [
+          "region",
+          "total"
+        ],
+        "format": "arrow-to-json",
+        "truncated": false,
+        "rowCount": 2
+      },
+      "parquet": {
+        "rows": [
+          {
+            "department": "hardware",
+            "total": "12"
+          },
+          {
+            "department": "software",
+            "total": "8"
+          }
+        ],
+        "columns": [
+          "department",
+          "total"
+        ],
+        "format": "arrow-to-json",
+        "truncated": false,
+        "rowCount": 2
+      }
+    },
+    "boundedResult": {
+      "columns": [
+        "i"
+      ],
+      "rowCount": 10000,
+      "truncated": true,
+      "firstRow": {
+        "i": "0"
+      },
+      "lastRow": {
+        "i": "9999"
+      }
+    }
+  }
+}

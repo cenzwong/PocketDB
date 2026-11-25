@@ -1,0 +1,111 @@
+import { Client } from "@modelcontextprotocol/client";
+import { InMemoryTransport } from "@modelcontextprotocol/server";
+import { afterEach, expect, test, vi } from "vitest";
+import { createPocketDBMcpServer } from "../src/index.js";
+
+const servers: Array<ReturnType<typeof createPocketDBMcpServer>> = [];
+const clients: Client[] = [];
+
+afterEach(async () => {
+  await Promise.all(clients.splice(0).map((client) => client.close()));
+  await Promise.all(servers.splice(0).map((server) => server.close()));
+});
+
+test("exposes structured results, delegates authorization, and redacts failed credentials", async () => {
+  const kv = {
+    ping: vi.fn(async () => "PONG"),
+    get: vi.fn(async () => new TextEncoder().encode("value")),
+    set: vi.fn(async () => {
+      throw Object.assign(new Error("Invitation does not allow SET."), {
+        code: "operation-not-authorized",
+      });
+    }),
+    delete: vi.fn(async () => 0),
+  };
+  const client = {
+    engineId: "kv",
+    access: "read-only",
+    state: "connected",
+    capabilities: { operations: ["PING", "GET"] },
+    kv,
+    close: vi.fn(async () => undefined),
+  };
+  const connect = vi.fn(async (invitationUri: string) => {
+    if (invitationUri === "pocketdb://private-token")
+      throw new Error(`Could not parse ${invitationUri}`);
+    return { client, close: client.close };
+  });
+  const server = createPocketDBMcpServer({ connect: connect as never });
+  const mcpClient = new Client({ name: "test-client", version: "1" });
+  const [clientTransport, serverTransport] =
+    InMemoryTransport.createLinkedPair();
+  servers.push(server);
+  clients.push(mcpClient);
+  await server.connect(serverTransport);
+  await mcpClient.connect(clientTransport);
+
+  const failedConnect = await mcpClient.callTool({
+    name: "pocketdb_connect",
+    arguments: {
+      invitationUri: "pocketdb://private-token",
+      signalingEndpoint: "https://private.example/signal",
+    },
+  });
+  expect(failedConnect.isError).toBe(true);
+  expect(failedConnect.structuredContent).toMatchObject({
+    ok: false,
+    error: {
+      code: "operation-failed",
+      message: "Could not parse [redacted invitation]",
+    },
+  });
+  expect(JSON.stringify(failedConnect)).not.toContain("private-token");
+
+  const connected = await mcpClient.callTool({
+    name: "pocketdb_connect",
+    arguments: {
+      invitationUri: "pocketdb://valid",
+      signalingEndpoint: "https://signal.example",
+    },
+  });
+  const data = connected.structuredContent as {
+    data: { connectionId: string };
+  };
+  expect(data.data.connectionId).toMatch(/^[0-9a-f-]{36}$/);
+
+  const get = await mcpClient.callTool({
+    name: "pocketdb_key_value",
+    arguments: {
+      connectionId: data.data.connectionId,
+      command: "GET",
+      key: "a",
+    },
+  });
+  expect(get.structuredContent).toMatchObject({
+    ok: true,
+    data: { base64: "dmFsdWU=" },
+  });
+
+  const denied = await mcpClient.callTool({
+    name: "pocketdb_key_value",
+    arguments: {
+      connectionId: data.data.connectionId,
+      command: "SET",
+      key: "a",
+      value: "b",
+    },
+  });
+  expect(kv.set).toHaveBeenCalledTimes(1);
+  expect(denied.isError).toBe(true);
+  expect(denied.structuredContent).toMatchObject({ ok: false });
+
+  const disconnected = await mcpClient.callTool({
+    name: "pocketdb_disconnect",
+    arguments: { connectionId: data.data.connectionId },
+  });
+  expect(disconnected.structuredContent).toMatchObject({
+    ok: true,
+    data: { disconnected: true },
+  });
+  expect(client.close).toHaveBeenCalledOnce();
+});

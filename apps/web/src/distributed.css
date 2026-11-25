@@ -1,0 +1,162 @@
+.distributed-shell {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 32px clamp(18px, 4vw, 48px) 56px;
+}
+
+.distributed-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.distributed-nav a {
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.distributed-intro {
+  max-width: 760px;
+  margin-bottom: 28px;
+}
+
+.distributed-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.distributed-card {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.distributed-card h2 {
+  margin-bottom: 8px;
+  font-size: 18px;
+}
+
+.distributed-card label {
+  display: block;
+  margin: 14px 0 6px;
+  color: #3b4551;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.distributed-card input,
+.distributed-card select,
+.distributed-card textarea {
+  width: 100%;
+  min-height: 40px;
+  padding: 9px 10px;
+  border: 1px solid #cbd1d9;
+  border-radius: 6px;
+  background: white;
+  color: var(--ink);
+}
+
+.distributed-card textarea {
+  min-height: 104px;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+}
+
+.distributed-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.distributed-status {
+  min-height: 22px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.distributed-status[data-state="connected"] {
+  color: var(--green);
+}
+
+.distributed-status[data-state="error"] {
+  color: var(--red);
+}
+
+.distributed-documents {
+  margin-top: 18px;
+}
+
+.distributed-write-form {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) minmax(160px, 2fr) auto;
+  align-items: end;
+  gap: 10px;
+}
+
+.distributed-write-form label {
+  margin-top: 0;
+}
+
+.distributed-write-form input {
+  margin-top: 6px;
+}
+
+.distributed-membership {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.distributed-membership ul,
+.distributed-events {
+  padding-left: 20px;
+  color: #4b5562;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.distributed-document {
+  min-height: 86px;
+  overflow-wrap: anywhere;
+  padding: 12px;
+  border: 1px solid #e0e4e9;
+  border-radius: 6px;
+  background: #f8f9fb;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.distributed-events-card {
+  margin-top: 18px;
+}
+
+.distributed-note {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border-left: 3px solid #d4a441;
+  background: #fff9e8;
+  color: #5d512d;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+@media (max-width: 760px) {
+  .distributed-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .distributed-write-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

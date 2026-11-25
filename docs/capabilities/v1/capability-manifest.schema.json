@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://pocketdb.dev/schemas/capability-manifest-v1.json",
+  "title": "PocketDB capability manifest v1",
+  "type": "object",
+  "required": [
+    "version",
+    "engineId",
+    "access",
+    "operations",
+    "readOnlyOperations",
+    "operationMetadata",
+    "features"
+  ],
+  "properties": {
+    "version": { "const": 1 },
+    "engineId": { "type": "string", "minLength": 1 },
+    "access": { "enum": ["read-only", "read-write"] },
+    "operations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "readOnlyOperations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true
+    },
+    "operationMetadata": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/operation" }
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": { "type": ["boolean", "number", "string"] }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "operation": {
+      "type": "object",
+      "required": ["name", "allowedAccess", "inputSchema", "outputSchema"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "allowedAccess": {
+          "type": "array",
+          "items": { "enum": ["read-only", "read-write"] },
+          "uniqueItems": true
+        },
+        "inputSchema": { "oneOf": [{ "type": "boolean" }, { "type": "object" }] },
+        "outputSchema": { "oneOf": [{ "type": "boolean" }, { "type": "object" }] }
+      },
+      "additionalProperties": false
+    }
+  }
+}

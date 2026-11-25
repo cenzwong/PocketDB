@@ -1,0 +1,236 @@
+{
+  "version": 1,
+  "engineId": "kv",
+  "access": "read-only",
+  "operations": [
+    "PING",
+    "GET",
+    "EXISTS",
+    "MGET",
+    "TTL",
+    "SCAN",
+    "DBSIZE"
+  ],
+  "readOnlyOperations": [
+    "PING",
+    "GET",
+    "EXISTS",
+    "MGET",
+    "TTL",
+    "SCAN",
+    "DBSIZE"
+  ],
+  "operationMetadata": [
+    {
+      "name": "PING",
+      "allowedAccess": [
+        "read-only",
+        "read-write"
+      ],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [],
+        "minItems": 0,
+        "maxItems": 1,
+        "items": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "string"
+      }
+    },
+    {
+      "name": "GET",
+      "allowedAccess": [
+        "read-only",
+        "read-write"
+      ],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          }
+        ],
+        "minItems": 1,
+        "maxItems": 1,
+        "items": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "oneOf": [
+          {
+            "oneOf": [
+              {
+                "type": "string",
+                "x-runtimeType": "string"
+              },
+              {
+                "type": "string",
+                "contentEncoding": "base64",
+                "x-runtimeType": "Uint8Array"
+              }
+            ]
+          },
+          {
+            "type": "null"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EXISTS",
+      "allowedAccess": [
+        "read-only",
+        "read-write"
+      ],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          }
+        ],
+        "minItems": 1,
+        "items": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    {
+      "name": "MGET",
+      "allowedAccess": [
+        "read-only",
+        "read-write"
+      ],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          }
+        ],
+        "minItems": 1,
+        "items": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "items": {
+          "oneOf": [
+            {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "x-runtimeType": "string"
+                },
+                {
+                  "type": "string",
+                  "contentEncoding": "base64",
+                  "x-runtimeType": "Uint8Array"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "TTL",
+      "allowedAccess": [
+        "read-only",
+        "read-write"
+      ],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          }
+        ],
+        "minItems": 1,
+        "maxItems": 1,
+        "items": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "integer",
+        "minimum": -2
+      }
+    },
+    {
+      "name": "SCAN",
+      "allowedAccess": [
+        "read-only",
+        "read-write"
+      ],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "minItems": 1,
+        "items": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        ],
+        "minItems": 2,
+        "maxItems": 2
+      }
+    },
+    {
+      "name": "DBSIZE",
+      "allowedAccess": [
+        "read-only",
+        "read-write"
+      ],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "array",
+        "prefixItems": [],
+        "minItems": 0,
+        "maxItems": 0,
+        "items": true
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "integer",
+        "minimum": 0
+      }
+    }
+  ],
+  "features": {
+    "binarySafeValues": true,
+    "persistentDataDir": true,
+    "memoryBudgetBytes": 67108864
+  }
+}

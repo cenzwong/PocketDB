@@ -1,0 +1,21 @@
+{
+  "name": "@pocketdb/protocol",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "files": [
+    "src",
+    "fixtures",
+    "README.md",
+    "LICENSE"
+  ],
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:browser": "node test/invitation-browser.mjs && node test/peer-auth-browser.mjs"
+  }
+}

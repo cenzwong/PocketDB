@@ -1,0 +1,83 @@
+{
+  "task": "TASK-059",
+  "kind": "deterministic-javascript-versus-wasm-flat-vector-search-probe",
+  "environment": {
+    "node": "v25.8.1",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "wasmCompileMs": 0.12375000000000114,
+    "wasmModuleBytes": 171
+  },
+  "generation": "LCG Float32 vectors with seed 0x4f1bbcdc; deterministic 128-dimensional synthetic dataset",
+  "qualityMetric": "Recall@10 across 16 fixed queries, WASM exact scores ranked against JS exact scan; expected 1.0",
+  "timings": "31 repeated iterations per query, first 4 discarded; median of 192 query timings per dataset and runtime",
+  "results": [
+    {
+      "vectorCount": 1000,
+      "dimensions": 128,
+      "topK": 10,
+      "queryCount": 16,
+      "warmSearchMedianMs": {
+        "javascriptFlatExact": 0.14649999999999963,
+        "webAssemblyFlatExact": 0.0972500000000025
+      },
+      "wasmRecallAt10AgainstJavascriptExact": 1,
+      "buildMs": {
+        "javascriptCopy": 0.057833000000002244,
+        "wasmInstantiationAndMemory": 0.04962500000000247,
+        "wasmVectorCopy": 0.042916999999999206
+      },
+      "accountedIndexAndScratchBytes": {
+        "javascript": 520512,
+        "webAssembly": 524288
+      }
+    },
+    {
+      "vectorCount": 10000,
+      "dimensions": 128,
+      "topK": 10,
+      "queryCount": 16,
+      "warmSearchMedianMs": {
+        "javascriptFlatExact": 1.200499999999991,
+        "webAssemblyFlatExact": 0.9617920000000026
+      },
+      "wasmRecallAt10AgainstJavascriptExact": 1,
+      "buildMs": {
+        "javascriptCopy": 0.47862500000000097,
+        "wasmInstantiationAndMemory": 0.04454199999999986,
+        "wasmVectorCopy": 0.5219160000000045
+      },
+      "accountedIndexAndScratchBytes": {
+        "javascript": 5200512,
+        "webAssembly": 5242880
+      }
+    },
+    {
+      "vectorCount": 50000,
+      "dimensions": 128,
+      "topK": 10,
+      "queryCount": 16,
+      "warmSearchMedianMs": {
+        "javascriptFlatExact": 6.077790999999991,
+        "webAssemblyFlatExact": 4.816290999999978
+      },
+      "wasmRecallAt10AgainstJavascriptExact": 1,
+      "buildMs": {
+        "javascriptCopy": 3.6645420000000115,
+        "wasmInstantiationAndMemory": 0.07675000000000409,
+        "wasmVectorCopy": 3.154125000000022
+      },
+      "accountedIndexAndScratchBytes": {
+        "javascript": 26000512,
+        "webAssembly": 26017792
+      }
+    }
+  ],
+  "recommendation": "Start with JavaScript exact flat scan for bounded datasets up to the measured 10,000-vector tier. Keep the API independent of the index implementation. Gate WASM/HNSW adapter work on a representative browser benchmark that includes download, initialization, realistic recall, persistence, and memory limits.",
+  "limitations": [
+    "Both candidates are exact flat scans, not approximate HNSW indexes; this compares JS versus WASM execution, not ANN recall or a third-party library.",
+    "Node timings do not substitute for browser worker, battery, memory pressure, or static-site asset measurements.",
+    "The WASM module is a minimal probe kernel generated inline by this script; it is not proposed product code.",
+    "Synthetic vectors are deterministic and bounded but do not represent application embeddings or semantic relevance judgments."
+  ]
+}

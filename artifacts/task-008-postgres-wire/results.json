@@ -1,0 +1,46 @@
+{
+  "node": "v25.8.1",
+  "driver": "pg 8.23.1",
+  "pglite": "0.6.0",
+  "browser": "Chrome/160.0.8180.0",
+  "browserRows": [
+    {
+      "id": 1,
+      "value": "commit"
+    }
+  ],
+  "trace": [
+    "v3 startup handled locally",
+    "P",
+    "B",
+    "D",
+    "E",
+    "S",
+    "Q",
+    "P",
+    "B",
+    "D",
+    "E",
+    "S",
+    "Q",
+    "Q",
+    "P",
+    "B",
+    "D",
+    "E",
+    "S",
+    "Q",
+    "CancelRequest unsupported",
+    "Q",
+    "Q",
+    "P",
+    "B",
+    "D",
+    "E",
+    "S",
+    "Terminate handled locally",
+    "cleanup rollback"
+  ],
+  "parameterized": true,
+  "cancellation": "Separate CancelRequest closed without forwarding. Subsequent query passed."
+}

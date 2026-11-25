@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "node-datachannel": "0.33.6",
+    "werift": "0.28.0"
+  }
+}

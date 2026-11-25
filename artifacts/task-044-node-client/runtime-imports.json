@@ -1,0 +1,23 @@
+{
+  "node25Mac": {
+    "node": "v25.8.1",
+    "platform": "darwin",
+    "arch": "arm64",
+    "packageImport": "passed",
+    "authenticatedBrowserIntegration": "passed"
+  },
+  "node24Container": {
+    "node": "v24.22.3",
+    "platform": "linux",
+    "arch": "arm64",
+    "packageImport": "passed",
+    "fullWebRTCIntegration": "not-run"
+  },
+  "node26Container": {
+    "node": "v26.13.1",
+    "platform": "linux",
+    "arch": "arm64",
+    "packageImport": "passed",
+    "fullWebRTCIntegration": "not-run"
+  }
+}

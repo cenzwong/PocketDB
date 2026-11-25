@@ -1,0 +1,77 @@
+/PocketDB/
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.0
+Date: Tue, 24 Nov 2026 10:30:13 GMT
+Content-type: text/html
+Content-Length: 354
+Last-Modified: Tue, 24 Nov 2026 10:28:37 GMT
+Cache-Control: no-store
+
+/isolated/PocketDB/
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.0
+Date: Tue, 24 Nov 2026 10:30:13 GMT
+Content-type: text/html
+Content-Length: 354
+Last-Modified: Tue, 24 Nov 2026 10:28:37 GMT
+Cache-Control: no-store
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+
+/PocketDB/probe.js
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.0
+Date: Tue, 24 Nov 2026 10:30:13 GMT
+Content-type: text/javascript
+Content-Length: 1615
+Last-Modified: Tue, 24 Nov 2026 10:28:37 GMT
+Cache-Control: no-store
+
+/PocketDB/worker.js
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.0
+Date: Tue, 24 Nov 2026 10:30:13 GMT
+Content-type: text/javascript
+Content-Length: 1714
+Last-Modified: Tue, 24 Nov 2026 10:28:37 GMT
+Cache-Control: no-store
+
+/isolated/PocketDB/worker.js
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.0
+Date: Tue, 24 Nov 2026 10:30:13 GMT
+Content-type: text/javascript
+Content-Length: 1714
+Last-Modified: Tue, 24 Nov 2026 10:28:37 GMT
+Cache-Control: no-store
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+
+/PocketDB/answer.wasm
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.0
+Date: Tue, 24 Nov 2026 10:30:13 GMT
+Content-type: application/wasm
+Content-Length: 39
+Last-Modified: Tue, 24 Nov 2026 10:28:37 GMT
+Cache-Control: no-store
+
+/isolated/PocketDB/answer.wasm
+HTTP/1.0 200 OK
+Server: SimpleHTTP/0.6 Python/3.13.0
+Date: Tue, 24 Nov 2026 10:30:13 GMT
+Content-type: application/wasm
+Content-Length: 39
+Last-Modified: Tue, 24 Nov 2026 10:28:37 GMT
+Cache-Control: no-store
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+
+/worker.js
+HTTP/1.0 404 Not Found
+Server: SimpleHTTP/0.6 Python/3.13.0
+Date: Tue, 24 Nov 2026 10:30:13 GMT
+Connection: close
+Content-Type: text/html;charset=utf-8
+Content-Length: 330
+Cache-Control: no-store

@@ -1,0 +1,19 @@
+{
+  "node": "v25.8.1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "browser": "Chrome/160.0.8181.0",
+  "postgres": {
+    "driver": "3.3.9",
+    "parameterizedQuery": true,
+    "transaction": "committed and read back",
+    "connectionContextClosed": true
+  },
+  "redis": {
+    "client": "8.2.0",
+    "protocol": 2,
+    "binaryRoundTrip": true,
+    "unsupportedCommand": "INCR rejected",
+    "connectionClosed": true
+  }
+}

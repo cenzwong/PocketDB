@@ -1,0 +1,37 @@
+{
+  "node": "v25.8.1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "browser": "Chrome/160.0.8181.0",
+  "postgresBridge": {
+    "driver": "node-postgres 8.23.1",
+    "startup": true,
+    "parameterizedQueries": true,
+    "transaction": "committed row visible after commit",
+    "isolation": "second invitation received PostgreSQL 55006 while another session owned a transaction, then worked after commit",
+    "driverDisconnect": "uncommitted row rolled back",
+    "bind": "127.0.0.1 by default",
+    "separateInvitations": 2
+  },
+  "pythonPostgres": {
+    "driver": "3.3.9",
+    "parameterizedQuery": true,
+    "transaction": "committed and read back",
+    "connectionContextClosed": true
+  },
+  "keyValue": {
+    "connect": true,
+    "ping": "PONG",
+    "inspect": true
+  },
+  "sql": {
+    "parameterizedQuery": true,
+    "ping": true,
+    "schemaInspection": true
+  },
+  "export": {
+    "readOnlyInvitation": true,
+    "rows": 1,
+    "readWriteInvitationDenied": true
+  }
+}

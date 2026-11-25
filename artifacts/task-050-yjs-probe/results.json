@@ -1,0 +1,79 @@
+{
+  "kind": "yjs-offline-reorder-duplicate-reconnect-state-vector-probe",
+  "node": "v25.8.1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "yjs": "13.6.33",
+  "peers": [
+    "peer-a",
+    "peer-b",
+    "peer-c"
+  ],
+  "offlineUpdateBytes": [
+    {
+      "peer": "peer-a",
+      "bytes": 1026
+    },
+    {
+      "peer": "peer-b",
+      "bytes": 1026
+    },
+    {
+      "peer": "peer-c",
+      "bytes": 1026
+    }
+  ],
+  "initialOutOfOrderDuplicateApplication": {
+    "sequences": [
+      [
+        "peer-b",
+        "peer-a",
+        "peer-c",
+        "peer-b"
+      ],
+      [
+        "peer-c",
+        "peer-a",
+        "peer-b",
+        "peer-a"
+      ]
+    ],
+    "duplicateApplications": 2,
+    "sharedPeersConverged": true,
+    "disconnectedPeerDetectedAsBehind": true,
+    "stateVectorBytesWhileDisconnected": [
+      19,
+      19,
+      7
+    ]
+  },
+  "reconnectByStateVector": {
+    "passes": [
+      {
+        "payloadBytes": 2132,
+        "nonEmptyMessages": 5
+      },
+      {
+        "payloadBytes": 108,
+        "nonEmptyMessages": 6
+      }
+    ],
+    "converged": true,
+    "stateVectorBytesAfterReconnect": 25
+  },
+  "snapshotGrowth": {
+    "localUpdateBytes": 3078,
+    "fullStateBytes": 4098,
+    "stateVectorBytes": 25,
+    "eventCount": 4,
+    "offlineRecordCount": 4
+  },
+  "fourthPeerOfflineJoin": {
+    "beforeSyncStateBytes": 1026,
+    "stateVectorDeltaBytes": 3076,
+    "converged": true
+  },
+  "mergeUpdateIsIdempotent": true,
+  "authorizationTested": false,
+  "networkLatencyTested": false
+}

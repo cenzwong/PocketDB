@@ -1,0 +1,16 @@
+{
+  "name": "@pocketdb/transport",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./testing/transport-contract.ts",
+    "./testing/signaling": "./testing/in-process-signaling.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:browser": "node test/webrtc-browser.mjs && node test/discovery-browser.mjs"
+  }
+}

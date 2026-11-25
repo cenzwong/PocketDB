@@ -1,0 +1,50 @@
+# Remote access and protocol
+
+Scope covers the Hosted Mode connection from the browser console or TypeScript SDK to the authoritative host. Source requirements are in [handoff sections 10–13, 16 and 27](../handoff.md).
+
+## Invitations and authorization
+
+- Invitation v1 is a base64url-encoded JSON payload carried in a URL fragment. Supported forms are `pocketdb://<room>/<engine>#invite=<payload>` (the PostgreSQL route is `postgres`) and an HTTPS browser URL ending in `#invite=<payload>`. Plain HTTP browser links are accepted only for loopback development origins. URL query parameters are rejected. The parser validates the custom URI route against the payload and can compare the room, instance, engine and pinned host ID against the caller's expected target.
+- The payload identifies invitation version, room, instance, engine (`kv` or `postgresql`), expected host key ID (the base64url SHA-256 digest from the identity design), access (`read-only` or `read-write`), a 256-bit cryptographically random capability, and optional `expiresAt` as Unix epoch milliseconds. Use `createInvitation` and the URI/link builders in `@pocketdb/protocol`; do not log the returned capability or fragment. `redactInvitationForLog` removes query and fragment data.
+- Treat the fragment as a bearer secret even though browsers do not send it as an HTTP request path. It can remain in browser history, copied text and page memory. Do not persist invitations by default. `createBrowserInvitationLink` returns a warning for read-write invitations; show it before copying privileged links. Room identifiers are routing data, never credentials.
+- Parsing and format validation do not authenticate the host, prove client key possession, or enforce permissions. The host must validate identity, expiry and revocation and enforce the invitation's access scope before opening an engine session. `PeerSessionAuthority` pins the host P-256 public-key digest from the invitation, binds both connected DTLS certificate fingerprints and the invitation scope to a signed single-use challenge, verifies client signature and HMAC capability proof, and issues a connection-bound session.
+- Authenticate at the application layer and bind the session to the expected peer, host, role and database instance. Deny unauthenticated, invalid, expired and revoked access. On revocation, close the returned active engine sessions and prevent reconnection with revoked credentials. Revocation blocks subsequent handler dispatch; it does not cancel a handler already in progress.
+- Owners administer the database and sessions. Read-write clients use permitted reads and writes. Read-only clients use permitted reads. Enforce authorization before engine execution and enforce SQL read-only access using verified engine controls or restricted execution. Fail closed when enforcement is unavailable.
+- Scope access to supported database capabilities. Database operations cannot execute arbitrary JavaScript.
+
+## Request lifecycle
+
+| Phase | Contract |
+| --- | --- |
+| Negotiate | Exchange protocol version and engine capabilities over a replaceable byte transport. Reject unsupported message versions predictably. |
+| Authenticate and open | Check the invitation and peer identity before opening an engine session. Close session state on disconnect or shutdown according to the selected engine lifecycle. |
+| Send | Validate a versioned envelope with request, session and instance identifiers, engine, operation and typed payload. Validate inputs and size before dispatch. |
+| Execute | Bind requests to the authorized session. Enforce connection, rate, query, response and execution limits where supported. Handle duplicates and preserve concurrent session isolation. |
+| Respond | Return success or structured error correlated by request ID. Represent supported binary and SQL values without loss. |
+| Recover | Expose disconnects and timeouts. Distinguish rejection before execution, completion, execution failure and unknown outcome. Retry a mutation automatically only when its outcome is known or the operation is explicitly idempotent. |
+
+`PeerSessionAuthority` defaults to 256 pending challenges and 1,000 authenticated peer sessions per authority. The remote host defaults to a 256 KiB protocol ceiling for inbound envelopes and encoded responses, 16 open sessions and 64 active requests per authenticated peer. Effective request and response caps also respect the transport's advertised maximum; the default WebRTC adapter caps individual messages at 16 KiB. The host admits at most 120 new requests per fixed 60-second window and retains 256 completed request results for deduplication. Options may lower message caps. Oversized input is rejected before dispatch and closes the connection; oversized completed output and post-dispatch timeouts report unknown outcome and are never replayed. Worker deadlines terminate the worker and settle pending calls; in-flight PGlite SQL cancellation is not supported. Orderly session close and instance stop roll back a PGlite transaction; rollback after forced worker termination is not verified. See the [remote host limit and cancellation contract](../../packages/remote-access/README.md).
+
+Initial message families cover greeting, authentication results, capability discovery, open/close session, request/response/error, heartbeat and disconnect. The implemented v1 envelope, typed values, size limits and executable fixtures are defined in the [browser protocol spec](protocol-v1.md). Duplicate suppression, retry policy and cancellation behavior remain with the host and client work. Streaming, subscriptions and replication have separate protocol work.
+
+## Connectivity and SDK
+
+The transport exposes peer state, message delivery, disconnection and bounded flow control. Resolve message sizing or fragmentation and choose a replaceable discovery adapter with configurable ICE services under ADR-005 and ADR-006. Test direct and relayed paths. Failures must give the user actionable connection diagnostics.
+
+The `@pocketdb/client` package exposes typed connection, capability discovery, SQL and key-value APIs, configurable timeouts, structured errors and close without importing the web app. `connectPeer` is an injected boundary and must return only after transport setup and peer authentication; the SDK does not select a signaling provider. The connection and engine API are implemented in [the client package](../../packages/client/README.md). Automatic restoration of an established session remains unsupported; reconnecting requires a fresh invitation and peer authentication. Cancellation after dispatch does not imply engine cancellation.
+
+## Browser host administration
+
+The browser console requires a host-supplied HTTPS room-signaling endpoint (HTTP is accepted only for loopback development). PocketDB does not operate a signaling service. The client must be configured to use the same signaling provider; the provider endpoint is not embedded in the invitation. Each invitation has its own room and admits one authenticated peer. Create another invitation for each additional peer. Invitations and the host identity remain in page memory; reload or stop ends their validity. Revocation removes the link from the console, blocks further authorization and disconnects its connected peer. Disconnecting a peer also revokes its one-peer invitation, so create a new invitation for a later connection. The peer table shows the authenticated client's public-key fingerprint, granted access, connection time and disconnect action; invitation capabilities stay in the shareable link and are omitted from status text. Review the read-write warning before copying such a link. The console warns hosts to keep the tab open and device awake; backgrounding or sleeping can interrupt service.
+
+The SDK retries transient signaling/transport setup failures up to three attempts by default, with bounded backoff inside the total connection deadline. Every attempt reruns peer authentication; invalid or revoked invitations fail without retry. After an established channel drops, the client reports a terminal `failed` state, settles in-flight requests with an `unknown` outcome and rejects later operations as `not-started`. It never replays a mutation. The host closes the session and revokes that invitation; the client UI asks for a new invitation before the user reconnects, creating a newly authenticated session. Host disappearance, sleep and suspension therefore require explicit user action after the host is available again.
+
+The browser client accepts the invitation link and signaling endpoint separately, pins and authenticates the host through the invitation, then connects the typed SDK. It renders only the invited engine's access-appropriate operations. SQL parameters use a JSON array; key-value controls expose the SDK's supported `PING`, `GET`, `SET` and `DEL` methods when the host advertises them. Structured SDK errors retain their code and known or unknown operation outcome. Client status text does not repeat invitation links or capabilities.
+
+## Evidence
+
+- Protocol and session tests cover malformed and oversized payloads, unsupported versions, lossless values, duplicate and timed-out requests, peer-bound authentication, replay, expiry, revocation, handler gating, redacted rejection records and all reported execution outcomes.
+- Security tests cover mismatched host or peer identity, expired and revoked invitations, read-only write denial, resource limits and log redaction.
+- Browser integration covers join, read/write, loss of host, signalling outage, reconnect and interrupted transactions. Verify independently on physical devices and realistic networks for M2 and M3.
+
+See [handoff feasibility tickets and exit criteria](../../project/TECHNICAL_SPIKES.md) and [milestone evidence](../../project/MILESTONES.md).

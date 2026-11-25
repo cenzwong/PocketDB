@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "engineId": "sqlite",
+  "access": "read-write",
+  "operations": ["query"],
+  "readOnlyOperations": ["query"],
+  "operationMetadata": [
+    {
+      "name": "query",
+      "allowedAccess": ["read-only", "read-write"],
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+          "sql": { "type": "string", "minLength": 1 },
+          "params": {
+            "type": "array",
+            "items": {
+              "type": ["null", "boolean", "number", "string"],
+              "x-runtimeTypes": ["bigint", "ArrayBuffer", "Uint8Array"]
+            }
+          },
+          "rowMode": { "enum": ["object", "array"] }
+        },
+        "required": ["sql"],
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "required": ["rows"],
+        "properties": {
+          "rows": { "type": "array", "description": "SQLite result rows." }
+        }
+      }
+    }
+  ],
+  "features": {
+    "parameterizedQueries": true,
+    "transactions": true,
+    "persistentDataDir": true,
+    "portableSnapshots": true,
+    "nativeFileImportExport": true,
+    "persistence": "opfs-sahpool",
+    "browserRequirements": "secure-context,opfs,web-locks",
+    "maxConcurrentOwners": 1,
+    "maxDatabaseFileBytes": 268435456,
+    "memoryFallback": true
+  }
+}

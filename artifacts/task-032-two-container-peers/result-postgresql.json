@@ -1,0 +1,1 @@
+{"engine":"postgresql","browser":"Chrome/158.0.8127.88","parameterizedQuery":"passed","unauthorized":"permission-denied: Read-only PostgreSQL sessions accept only a single parameterized SELECT from the safe query subset."}

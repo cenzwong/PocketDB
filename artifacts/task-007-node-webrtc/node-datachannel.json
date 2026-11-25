@@ -1,0 +1,50 @@
+{
+  "kind": "node-datachannel",
+  "node": "v25.8.1",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "napi": "10",
+  "library": "0.24.6",
+  "browser": "Chrome/160.0.8180.0",
+  "openUpperBoundMs": 232.01662499999998,
+  "checks": [
+    {
+      "id": 1,
+      "op": "set",
+      "roundTripUpperBoundMs": 101.43558400000006
+    },
+    {
+      "id": 2,
+      "op": "get",
+      "roundTripUpperBoundMs": 100.86266699999987
+    }
+  ],
+  "host": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/160.0.0.0 Safari/537.36",
+    "events": [
+      {
+        "event": "connection-state",
+        "ms": 228,
+        "state": "connecting"
+      },
+      {
+        "event": "local-signal-ready",
+        "ms": 241,
+        "type": "answer"
+      },
+      {
+        "event": "connection-state",
+        "ms": 353,
+        "state": "connected"
+      },
+      {
+        "event": "channel-open",
+        "ms": 357,
+        "role": "host",
+        "maxMessageSize": 262144,
+        "sinceRemoteSignalMs": 140
+      }
+    ],
+    "checks": []
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "browser": "Chrome/160.0.8181.0",
+  "peerCount": 2,
+  "hostState": "connected",
+  "clientState": "connected",
+  "signalingAdapter": "in-process-signaling",
+  "iceServersConfigured": [],
+  "selectedPair": {
+    "localCandidateType": "host",
+    "remoteCandidateType": "host",
+    "protocol": "udp"
+  },
+  "roundTrip": true,
+  "unavailableSignalingDiagnostic": "signaling-unavailable",
+  "missingPeerDiagnostic": "signaling-peer-timeout",
+  "environment": "macOS 27.0.1 arm64, one development Mac, two local RTCPeerConnection peers"
+}

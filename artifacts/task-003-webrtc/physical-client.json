@@ -1,0 +1,66 @@
+{
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/159.0.0.0 Safari/537.36",
+  "events": [
+    {
+      "event": "local-signal-ready",
+      "ms": 59085,
+      "type": "offer"
+    },
+    {
+      "event": "connection-state",
+      "ms": 83728,
+      "state": "connecting"
+    },
+    {
+      "event": "connection-state",
+      "ms": 115109,
+      "state": "connected"
+    },
+    {
+      "event": "channel-open",
+      "ms": 115120,
+      "role": "client",
+      "maxMessageSize": 262144,
+      "sinceRemoteSignalMs": 31
+    },
+    {
+      "event": "checks-complete",
+      "ms": 123317
+    }
+  ],
+  "checks": [
+    {
+      "operation": "set",
+      "id": 1,
+      "ok": true,
+      "rttMs": 9.199999809265137
+    },
+    {
+      "operation": "get",
+      "id": 2,
+      "ok": true,
+      "rttMs": 9.299999952316284
+    },
+    {
+      "operation": "echo",
+      "bytes": 16384,
+      "id": 3,
+      "ok": true,
+      "rttMs": 44
+    },
+    {
+      "operation": "echo",
+      "bytes": 65536,
+      "id": 4,
+      "ok": true,
+      "rttMs": 105
+    },
+    {
+      "operation": "echo",
+      "bytes": 262144,
+      "id": 5,
+      "ok": true,
+      "rttMs": 357.30000019073486
+    }
+  ]
+}

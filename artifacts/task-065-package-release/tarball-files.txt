@@ -1,0 +1,9 @@
+package/package.json
+package/fixtures/v1-messages.json
+package/README.md
+package/src/capabilities.ts
+package/src/index.ts
+package/src/invitation.ts
+package/src/peer-authentication.ts
+package/src/protocol.ts
+package/LICENSE

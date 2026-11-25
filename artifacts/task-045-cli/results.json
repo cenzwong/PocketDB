@@ -1,0 +1,21 @@
+{
+  "node": "v25.8.1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "browser": "Chrome/160.0.8181.0",
+  "keyValue": {
+    "connect": true,
+    "ping": "PONG",
+    "inspect": true
+  },
+  "sql": {
+    "parameterizedQuery": true,
+    "ping": true,
+    "schemaInspection": true
+  },
+  "export": {
+    "readOnlyInvitation": true,
+    "rows": 1,
+    "readWriteInvitationDenied": true
+  }
+}

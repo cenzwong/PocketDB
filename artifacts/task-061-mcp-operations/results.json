@@ -1,0 +1,13 @@
+{
+  "node": "v25.8.1",
+  "platform": "darwin",
+  "arch": "arm64",
+  "browser": "Chrome/160.0.8181.0",
+  "engine": "kv",
+  "mcpTransport": "stdio subprocess",
+  "agentClient": "MCP Client SDK",
+  "authorizedOperation": "PING",
+  "unauthorizedOperation": "SET denied by read-only invitation",
+  "connectionLifecycle": "connect, inspect, disconnect",
+  "passed": true
+}

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>PocketDB RESP host</title>
+<h1>PocketDB RESP browser host</h1>
+<script type="module">
+  import { browserPeer } from "./peer-rpc.js";
+  const store = new Map();
+  globalThis.probePeer = browserPeer(({ op, key, value }) => {
+    if (op === "SET") {
+      store.set(key, value);
+      return "OK";
+    }
+    if (op === "GET") return store.get(key) ?? null;
+    throw new Error("Unsupported browser operation");
+  });
+  globalThis.probeValue = (key) => store.get(key);
+</script>

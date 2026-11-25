@@ -1,0 +1,74 @@
+{
+  "browser": "Chrome/160.0.8180.0",
+  "platform": "darwin",
+  "arch": "arm64",
+  "headless": false,
+  "systemSleep": "not observed",
+  "timeline": [
+    {
+      "event": "foreground seeded",
+      "elapsedMs": 4,
+      "boot": "65fc0b91-db0e-4594-aed7-cdb172ac3ca0",
+      "ticks": 1,
+      "value": "lifecycle-marker"
+    },
+    {
+      "event": "background sample",
+      "elapsedMs": 329,
+      "visibility": "hidden",
+      "result": {
+        "boot": "65fc0b91-db0e-4594-aed7-cdb172ac3ca0",
+        "ticks": 4,
+        "value": "lifecycle-marker"
+      }
+    },
+    {
+      "event": "DevTools freeze",
+      "elapsedMs": 726,
+      "error": "Browser reply timed out"
+    },
+    {
+      "event": "post-freeze read",
+      "elapsedMs": 728,
+      "result": {
+        "boot": "65fc0b91-db0e-4594-aed7-cdb172ac3ca0",
+        "ticks": 6,
+        "value": "lifecycle-marker"
+      },
+      "lifecycleEvents": [
+        "loaded",
+        "visibility",
+        "visibility",
+        "visibility",
+        "freeze",
+        "resume"
+      ]
+    },
+    {
+      "event": "reload old peer",
+      "elapsedMs": 869,
+      "error": "Browser channel disconnected"
+    },
+    {
+      "event": "reload fresh peer",
+      "elapsedMs": 983,
+      "boot": "6c6a68ed-9842-44b3-b9e3-d0ae6f0b2e49",
+      "ticks": 2,
+      "value": "lifecycle-marker",
+      "recoveryMs": 255
+    },
+    {
+      "event": "close old peer",
+      "elapsedMs": 1361,
+      "error": "Browser reply timed out"
+    },
+    {
+      "event": "reopen fresh peer",
+      "elapsedMs": 1629,
+      "boot": "34f3073c-22c3-4b68-a591-d20ca3ea1772",
+      "ticks": 2,
+      "value": "lifecycle-marker",
+      "recoveryMs": 646
+    }
+  ]
+}

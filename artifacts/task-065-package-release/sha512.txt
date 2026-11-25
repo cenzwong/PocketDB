@@ -1,0 +1,1 @@
+fb96b2555e0dae41f837e077395cfcbc318bddde36fd8930fce32969334013e6a3a096370de1032f73a440a2db254a434a4be9e823240d97e57be1400778e6c0  /Users/cenzwong/Projects/PocketDB/artifacts/task-065-package-release/pocketdb-protocol-0.1.0.tgz

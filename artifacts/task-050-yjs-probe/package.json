@@ -1,0 +1,11 @@
+{
+  "name": "pocketdb-task-050-yjs-probe",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "probe": "node probe.mjs"
+  },
+  "dependencies": {
+    "yjs": "13.6.33"
+  }
+}

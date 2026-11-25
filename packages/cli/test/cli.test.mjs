@@ -1,0 +1,400 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import { main, parseArguments } from "../src/cli.mjs";
+
+const uri = "pocketdb://example.invalid/secret-capability#private-data";
+
+function io() {
+  let stdout = "";
+  let stderr = "";
+  return {
+    stdin: { fd: 0 },
+    stdout: {
+      write: (value) => {
+        stdout += value;
+      },
+    },
+    stderr: {
+      write: (value) => {
+        stderr += value;
+      },
+    },
+    output: () => ({ stdout, stderr }),
+  };
+}
+
+function fakeConnection(engineId = "postgresql", overrides = {}) {
+  const calls = [];
+  const client = {
+    engineId,
+    access: "read-only",
+    peerId: "peer-test",
+    sessionId: "session-test",
+    capabilities: { operations: ["query", "schema"] },
+    query: async (...args) => {
+      calls.push(["query", ...args]);
+      return overrides.queryResult ?? { rows: [{ value: 1 }], affectedRows: 0 };
+    },
+    schema: async (...args) => {
+      calls.push(["schema", ...args]);
+      return [{ table_name: "items", column_name: "value" }];
+    },
+    kv: {
+      ping: async (...args) => {
+        calls.push(["ping", ...args]);
+        return "PONG";
+      },
+    },
+  };
+  return {
+    calls,
+    client,
+    closeCalls: 0,
+    close: async function close() {
+      this.closeCalls += 1;
+    },
+  };
+}
+
+describe("PocketDB CLI parsing and command execution", () => {
+  it("parses positional and environment invitation sources and bounded options", () => {
+    assert.deepEqual(
+      parseArguments([
+        "query",
+        uri,
+        "SELECT $1::text",
+        "--params",
+        '["ok"]',
+        "--timeout-ms",
+        "500",
+        "--json",
+      ]),
+      {
+        command: "query",
+        format: "json",
+        uriEnv: undefined,
+        uriStdin: false,
+        positionalUri: uri,
+        sql: "SELECT $1::text",
+        params: ["ok"],
+        requestTimeoutMs: 500,
+        connectTimeoutMs: 120_000,
+        maxRows: 1_000,
+        bridgePort: undefined,
+        bridgeHost: "127.0.0.1",
+        allowRemoteBind: false,
+        bridgeProtocol: "postgresql",
+        protocolSpecified: false,
+      },
+    );
+    assert.equal(
+      parseArguments(["connect", "--uri-env", "POCKETDB_INVITATION"]).uriEnv,
+      "POCKETDB_INVITATION",
+    );
+    assert.throws(
+      () => parseArguments(["query", uri, "SELECT 1", "--timeout-ms", "0"]),
+      /integer/,
+    );
+    assert.throws(() => parseArguments(["export", uri]), /explicit read query/);
+    assert.deepEqual(parseArguments(["connect", "--port", "0"]).bridgePort, 0);
+    assert.equal(
+      parseArguments(["connect", "--protocol", "resp", "--port", "0"])
+        .bridgeProtocol,
+      "resp",
+    );
+    assert.throws(
+      () => parseArguments(["connect", "--protocol", "resp"]),
+      /require --port/,
+    );
+    assert.throws(
+      () => parseArguments(["connect", "--protocol", "kv", "--port", "1"]),
+      /postgresql or resp/,
+    );
+    assert.throws(
+      () => parseArguments(["connect", "--port", "5432", "--host", "0.0.0.0"]),
+      /allow-remote-bind/,
+    );
+    assert.equal(
+      parseArguments([
+        "connect",
+        "--port",
+        "5432",
+        "--host",
+        "0.0.0.0",
+        "--allow-remote-bind",
+      ]).allowRemoteBind,
+      true,
+    );
+  });
+
+  it("connects and emits machine-readable metadata without printing the invitation", async () => {
+    const streams = io();
+    const connected = fakeConnection();
+    let seenUri;
+    const status = await main(
+      [
+        "connect",
+        "--uri-env",
+        "POCKETDB_INVITATION",
+        "--connect-timeout-ms",
+        "5000",
+        "--json",
+      ],
+      streams,
+      {
+        env: {
+          POCKETDB_INVITATION: uri,
+          POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api",
+        },
+        connect: async (value, options) => {
+          seenUri = value;
+          assert.equal(options.connectTimeoutMs, 5000);
+          assert.equal(options.requestTimeoutMs, 30_000);
+          return connected;
+        },
+      },
+    );
+    assert.equal(status, 0);
+    assert.equal(seenUri, uri);
+    assert.equal(connected.closeCalls, 1);
+    assert.equal(JSON.parse(streams.output().stdout).connected, true);
+    assert.ok(!streams.output().stdout.includes(uri));
+  });
+
+  it("holds one shared-client session open for a bridge and closes it on shutdown", async () => {
+    const streams = io();
+    const connected = fakeConnection();
+    let listenOptions;
+    const status = await main(
+      ["connect", "--uri-env", "POCKETDB_INVITATION", "--port", "0", "--json"],
+      streams,
+      {
+        env: {
+          POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api",
+          POCKETDB_INVITATION: uri,
+        },
+        connect: async () => connected,
+        createBridge: async (_client, options) => {
+          listenOptions = options;
+          return {
+            host: options.host,
+            port: 54321,
+            close: async () => {
+              listenOptions.closed = true;
+            },
+          };
+        },
+        waitForShutdown: async () => undefined,
+      },
+    );
+    assert.equal(status, 0);
+    assert.deepEqual(
+      { host: listenOptions.host, port: listenOptions.port },
+      { host: "127.0.0.1", port: 0 },
+    );
+    assert.equal(listenOptions.closed, true);
+    assert.equal(connected.closeCalls, 1);
+    assert.deepEqual(JSON.parse(streams.output().stdout), {
+      listening: true,
+      host: "127.0.0.1",
+      port: 54321,
+      protocol: "postgresql",
+      engine: "postgresql",
+    });
+  });
+
+  it("returns stable exit codes for port conflicts and remote host loss", async () => {
+    const env = {
+      POCKETDB_INVITATION: uri,
+      POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api",
+    };
+    const conflictStreams = io();
+    const conflictConnection = fakeConnection();
+    const conflictStatus = await main(
+      [
+        "connect",
+        "--uri-env",
+        "POCKETDB_INVITATION",
+        "--port",
+        "5432",
+        "--json",
+      ],
+      conflictStreams,
+      {
+        env,
+        connect: async () => conflictConnection,
+        createBridge: async () => {
+          throw Object.assign(new Error("ephemeral address"), {
+            code: "EADDRINUSE",
+          });
+        },
+      },
+    );
+    assert.equal(conflictStatus, 2);
+    assert.deepEqual(JSON.parse(conflictStreams.output().stderr), {
+      error: "bridge-port-in-use",
+      message: "Requested local bridge port is already in use.",
+    });
+    assert.equal(conflictConnection.closeCalls, 1);
+    assert.ok(!conflictStreams.output().stderr.includes(uri));
+
+    const remoteStreams = io();
+    const remoteConnection = fakeConnection();
+    const disconnected = Promise.resolve();
+    const remoteStatus = await main(
+      [
+        "connect",
+        "--uri-env",
+        "POCKETDB_INVITATION",
+        "--port",
+        "5432",
+        "--json",
+      ],
+      remoteStreams,
+      {
+        env,
+        connect: async () => remoteConnection,
+        createBridge: async () => ({
+          host: "127.0.0.1",
+          port: 5432,
+          disconnected,
+          close: async () => undefined,
+        }),
+        waitForShutdown: () => new Promise(() => {}),
+      },
+    );
+    assert.equal(remoteStatus, 4);
+    assert.deepEqual(JSON.parse(remoteStreams.output().stderr), {
+      error: "host-disconnected",
+      message: "Browser host disconnected; local bridge closed.",
+    });
+    assert.equal(remoteConnection.closeCalls, 1);
+    assert.ok(!remoteStreams.output().stderr.includes(uri));
+  });
+
+  it("runs SQL ping, query and schema inspection through the authenticated client", async () => {
+    const connected = fakeConnection();
+    const streams = io();
+    const dependencies = {
+      env: { POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api" },
+      connect: async () => connected,
+    };
+    assert.equal(await main(["ping", uri, "--json"], streams, dependencies), 0);
+    assert.equal(connected.calls[0][0], "schema");
+    assert.equal(
+      await main(
+        [
+          "query",
+          uri,
+          "SELECT $1::text",
+          "--params",
+          '["hello"]',
+          "--timeout-ms",
+          "500",
+          "--json",
+        ],
+        streams,
+        dependencies,
+      ),
+      0,
+    );
+    assert.deepEqual(connected.calls[1].slice(1, 4), [
+      "SELECT $1::text",
+      ["hello"],
+      { timeoutMs: 500 },
+    ]);
+    assert.equal(
+      await main(["inspect", uri, "--json"], streams, dependencies),
+      0,
+    );
+    assert.equal(connected.calls[2][0], "schema");
+    assert.equal(connected.closeCalls, 3);
+  });
+
+  it("exports only explicit read-only SELECT queries with a row bound", async () => {
+    const connected = fakeConnection("postgresql", {
+      queryResult: { rows: [{ value: 1 }, { value: 2 }, { value: 3 }] },
+    });
+    const streams = io();
+    const status = await main(
+      [
+        "export",
+        uri,
+        "--query",
+        "SELECT value FROM items",
+        "--max-rows",
+        "2",
+        "--json",
+      ],
+      streams,
+      {
+        env: { POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api" },
+        connect: async () => connected,
+      },
+    );
+    assert.equal(status, 0);
+    const output = JSON.parse(streams.output().stdout);
+    assert.equal(output.format, "jsonl");
+    assert.equal(output.rowCount, 2);
+    assert.equal(output.truncated, true);
+    assert.equal(output.data.split("\n").length, 2);
+    assert.match(connected.calls[0][1], /LIMIT 3$/);
+    assert.equal(connected.closeCalls, 1);
+  });
+
+  it("redacts invitation credentials and maps permission errors to a stable exit code", async () => {
+    const streams = io();
+    const status = await main(
+      ["connect", "--uri-env", "POCKETDB_INVITATION", "--json"],
+      streams,
+      {
+        env: {
+          POCKETDB_INVITATION: uri,
+          POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api",
+        },
+        connect: async () => {
+          throw Object.assign(new Error(`Denied ${uri}`), {
+            code: "permission-denied",
+          });
+        },
+      },
+    );
+    assert.equal(status, 3);
+    assert.ok(!streams.output().stderr.includes(uri));
+    assert.deepEqual(JSON.parse(streams.output().stderr), {
+      error: "permission-denied",
+      message: "Denied [REDACTED INVITATION]",
+    });
+  });
+
+  it("returns JSON validation errors and meaningful usage exit codes in noninteractive mode", async () => {
+    const streams = io();
+    const status = await main(["unknown", "--json"], streams, {});
+    assert.equal(status, 2);
+    assert.deepEqual(JSON.parse(streams.output().stderr), {
+      error: "usage",
+      message: "Unknown command 'unknown'.",
+    });
+  });
+
+  it("keeps timeout failures distinct and closes each connection after command completion", async () => {
+    const streams = io();
+    const connected = fakeConnection();
+    const status = await main(["query", uri, "SELECT 1", "--json"], streams, {
+      env: { POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api" },
+      connect: async () => ({
+        ...connected,
+        client: {
+          ...connected.client,
+          query: async () => {
+            throw Object.assign(new Error("Request timed out"), {
+              code: "request-timeout",
+            });
+          },
+        },
+      }),
+    });
+    assert.equal(status, 4);
+    assert.equal(JSON.parse(streams.output().stderr).error, "request-timeout");
+  });
+});

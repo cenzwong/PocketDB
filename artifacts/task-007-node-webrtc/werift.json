@@ -1,0 +1,49 @@
+{
+  "kind": "werift",
+  "node": "v25.8.1",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "napi": "10",
+  "browser": "Chrome/160.0.8180.0",
+  "openUpperBoundMs": 235.751083,
+  "checks": [
+    {
+      "id": 1,
+      "op": "set",
+      "roundTripUpperBoundMs": 102.02770799999996
+    },
+    {
+      "id": 2,
+      "op": "get",
+      "roundTripUpperBoundMs": 101.87087499999996
+    }
+  ],
+  "host": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/160.0.0.0 Safari/537.36",
+    "events": [
+      {
+        "event": "connection-state",
+        "ms": 177,
+        "state": "connecting"
+      },
+      {
+        "event": "local-signal-ready",
+        "ms": 182,
+        "type": "answer"
+      },
+      {
+        "event": "connection-state",
+        "ms": 357,
+        "state": "connected"
+      },
+      {
+        "event": "channel-open",
+        "ms": 361,
+        "role": "host",
+        "maxMessageSize": 65536,
+        "sinceRemoteSignalMs": 187
+      }
+    ],
+    "checks": []
+  }
+}
