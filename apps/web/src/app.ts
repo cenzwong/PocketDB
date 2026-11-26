@@ -613,7 +613,10 @@ export function mountApp(root: HTMLElement, options: AppOptions = {}): void {
         typeof result.rowCount === "number"
           ? `${result.rowCount} row${result.rowCount === 1 ? "" : "s"}`
           : `${rows.length} row${rows.length === 1 ? "" : "s"}`;
-      summaryElement.textContent = summary;
+      summaryElement.textContent =
+        result.truncated === true
+          ? `${summary} — results truncated; additional rows are omitted.`
+          : summary;
       if (columns.length === 0) {
         const empty = document.createElement("p");
         empty.className = "empty-message";

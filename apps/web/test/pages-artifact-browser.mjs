@@ -98,6 +98,25 @@ try {
     );
 
     await hostPage.evaluate(`(() => {
+      document.querySelector('[data-engine="duckdb"]').click();
+      document.querySelector('#setup-form').requestSubmit();
+    })()`);
+    await hostPage.wait(
+      "document.querySelector('#runtime-status').textContent === 'Running'",
+    );
+    await hostPage.evaluate(`(() => {
+      document.querySelector('#sql-input').value = "SELECT i FROM range(10001) AS values(i)";
+      document.querySelector('#run-query').click();
+    })()`);
+    await hostPage.wait(
+      "document.querySelector('#result-summary').textContent.includes('results truncated')",
+    );
+    await hostPage.evaluate("document.querySelector('#stop-button').click()");
+    await hostPage.wait(
+      "document.querySelector('#runtime-status').textContent === 'Stopped'",
+    );
+
+    await hostPage.evaluate(`(() => {
       document.querySelector('[data-engine="kv"]').click();
       document.querySelector('#setup-form').requestSubmit();
     })()`);
@@ -154,6 +173,10 @@ try {
     await distributedPage.wait(
       "Boolean(document.querySelector('#replica-host-start'))",
     );
+    const navigation = await distributedPage.evaluate(
+      "[...document.querySelectorAll('.distributed-nav a')].map(link => new URL(link.href).pathname)",
+    );
+    assert.deepEqual(navigation, [prefix, prefix]);
     await distributedPage.close();
     await hostPage.close();
     return {

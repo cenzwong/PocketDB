@@ -10,7 +10,9 @@ defineEngineAdapterContract("SQLite", () => ({
     operation: "query",
     payload: { sql: "SELECT ? AS value", params: ["contract"] },
   },
-  expectedResponse: { value: { rows: [{ value: "contract" }] } },
+  expectedResponse: {
+    value: { rows: [{ value: "contract" }], columns: ["value"] },
+  },
   sessionContext: {
     sessionId: "sqlite-contract-session",
     instanceId: "sqlite-contract-instance",
@@ -101,7 +103,7 @@ describe("SQLite engine adapter", () => {
     });
     await instance.closeSession(first);
     await expect(query(second, "SELECT * FROM entries")).resolves.toEqual({
-      value: { rows: [] },
+      value: { rows: [], columns: ["value"] },
     });
     await instance.closeSession(second);
     await instance.stop();

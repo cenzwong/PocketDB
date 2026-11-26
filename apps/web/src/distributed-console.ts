@@ -47,8 +47,8 @@ export function mountDistributedConsole(root: HTMLElement): void {
   root.innerHTML = `
     <div class="distributed-shell">
       <nav class="distributed-nav" aria-label="PocketDB navigation">
-        <a class="brand" href="/">PocketDB</a>
-        <a href="/">Hosted database console</a>
+        <a class="brand" href="./">PocketDB</a>
+        <a href="./">Hosted database console</a>
       </nav>
       <header class="distributed-intro">
         <h1>Distributed replica console</h1>

@@ -219,6 +219,11 @@ const operationSchemas: Readonly<
         required: ["rows"],
         properties: {
           rows: { type: "array", description: "SQLite result rows." },
+          columns: {
+            type: "array",
+            items: { type: "string" },
+            description: "Result column names in query order.",
+          },
         },
       },
     },

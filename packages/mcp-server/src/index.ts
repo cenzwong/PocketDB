@@ -231,19 +231,30 @@ export function createPocketDBMcpServer(options: PocketDBMcpOptions = {}) {
           "CSV export accepts one SELECT statement without a LIMIT clause.",
         );
       try {
-        const description = await connection.client.describeQuery(sql);
+        const description = connection.client.capabilities.operations.includes(
+          "describe-query",
+        )
+          ? await connection.client.describeQuery(sql)
+          : undefined;
         const result = (await connection.client.query(
           `${sql.trim()} LIMIT ${maxRows + 1}`,
-        )) as { rows?: Record<string, unknown>[] } | null;
+        )) as {
+          rows?: Record<string, unknown>[];
+          columns?: string[];
+          truncated?: boolean;
+        } | null;
         if (!result || !Array.isArray(result.rows))
           return failureCode(
             "invalid-query-result",
             "The SQL engine returned an unsupported result shape.",
           );
         const rows = result.rows;
-        const truncated = rows.length > maxRows;
+        const truncated = result.truncated === true || rows.length > maxRows;
         const bounded = rows.slice(0, maxRows);
-        const columns = description.fields.map((field) => field.name);
+        const columns =
+          description?.fields.map((field) => field.name) ??
+          result.columns ??
+          (rows[0] ? Object.keys(rows[0]) : []);
         const csv = [
           columns,
           ...bounded.map((row) => columns.map((column) => row[column])),

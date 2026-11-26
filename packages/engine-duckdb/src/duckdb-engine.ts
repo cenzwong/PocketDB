@@ -249,6 +249,9 @@ export class DuckDBEngineInstance implements EngineInstance {
         } finally {
           request.signal?.removeEventListener("abort", cancel);
         }
+        if (columns.length === 0 && stream.schema) {
+          columns = stream.schema.fields.map(({ name }) => name);
+        }
         this.updateTransactionOwner(session.id, payload.sql);
         return {
           value: {
@@ -567,7 +570,10 @@ function isSingleSelect(sql: string): boolean {
 
 function normalizeRow(
   row: unknown,
-  fields: ReadonlyArray<{ name: string; type: { toString(): string } }> = [],
+  fields: ReadonlyArray<{
+    name: string;
+    type: { toString(): string; scale?: number };
+  }> = [],
 ): Record<string, unknown> {
   if (typeof row !== "object" || row === null || Array.isArray(row)) {
     throw new EngineOperationError(
@@ -575,9 +581,7 @@ function normalizeRow(
       "DuckDB returned a row outside the supported object result format.",
     );
   }
-  const fieldTypes = new Map(
-    fields.map((field) => [field.name, field.type.toString()]),
-  );
+  const fieldTypes = new Map(fields.map((field) => [field.name, field.type]));
   return Object.fromEntries(
     Object.entries(row).map(([key, value]) => [
       key,
@@ -586,13 +590,16 @@ function normalizeRow(
   );
 }
 
-function normalizeValue(value: unknown, arrowType?: string): unknown {
+function normalizeValue(
+  value: unknown,
+  arrowType?: { toString(): string; scale?: number },
+): unknown {
   if (value instanceof Date) return value.toISOString();
   if (Array.isArray(value)) return value.map((item) => normalizeValue(item));
   if (
     value instanceof Uint32Array &&
     value.length === 4 &&
-    /decimal|hugeint|int128/i.test(arrowType ?? "")
+    /decimal|hugeint|int128/i.test(arrowType?.toString() ?? "")
   ) {
     const unsigned = value.reduce(
       (total, word, index) => total | (BigInt(word) << (32n * BigInt(index))),
@@ -600,9 +607,7 @@ function normalizeValue(value: unknown, arrowType?: string): unknown {
     );
     const integer =
       (value.at(3) ?? 0) & 0x80000000 ? unsigned - (1n << 128n) : unsigned;
-    const scale = Number(
-      /decimal\(\d+,\s*(\d+)\)/i.exec(arrowType ?? "")?.[1] ?? 0,
-    );
+    const scale = arrowType?.scale ?? 0;
     return formatDecimal(integer, scale);
   }
   if (ArrayBuffer.isView(value)) {

@@ -58,6 +58,16 @@ async function run(): Promise<void> {
     "SELECT id, value FROM probe WHERE id = ? ORDER BY id",
     [1],
   );
+  const empty = await query(
+    source,
+    sourceSession,
+    "SELECT id, value FROM probe WHERE 0",
+  );
+  if (
+    JSON.stringify((empty as { columns?: string[] }).columns) !==
+    JSON.stringify(["id", "value"])
+  )
+    throw new Error("Empty SQLite result lost its column metadata.");
   const nativeFile = await (
     source as EngineInstance & { exportNativeFile(): Promise<Uint8Array> }
   ).exportNativeFile();

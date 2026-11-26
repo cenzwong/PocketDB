@@ -242,13 +242,15 @@ export class SqliteEngineInstance implements EngineInstance {
         );
       const { capi } = this.requireSqlite();
       try {
+        const columns: string[] = [];
         const rows = database.exec({
           sql: payload.sql,
           bind: payload.params as BindingSpec | undefined,
           returnValue: "resultRows",
           rowMode: payload.rowMode ?? "object",
+          columnNames: columns,
         }) as unknown[];
-        return { value: { rows } };
+        return { value: { rows, columns } };
       } catch (cause) {
         if (
           cause instanceof EngineOperationError ||

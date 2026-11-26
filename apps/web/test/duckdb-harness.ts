@@ -67,6 +67,30 @@ async function run(): Promise<void> {
       "SELECT i FROM range(10001) AS values(i)",
     );
 
+    stage = "decimal and empty result metadata";
+    const decimals = await query(
+      instance,
+      session,
+      "SELECT 123.45::DECIMAL(10,2) AS positive, -0.09::DECIMAL(10,2) AS negative, 12::DECIMAL(10,0) AS whole",
+    );
+    assertImport(
+      JSON.stringify(resultRows(decimals)) ===
+        JSON.stringify([
+          { positive: "123.45", negative: "-0.09", whole: "12" },
+        ]),
+      "Decimal values lost their scale.",
+    );
+    const empty = await query(
+      instance,
+      session,
+      "SELECT 1 AS empty_column WHERE false",
+    );
+    assertImport(
+      JSON.stringify(resultObject(empty).columns) ===
+        JSON.stringify(["empty_column"]),
+      "Empty result lost its column metadata.",
+    );
+
     stage = "read-only transaction";
     const reader = await instance.openSession({
       instanceId: instance.id,

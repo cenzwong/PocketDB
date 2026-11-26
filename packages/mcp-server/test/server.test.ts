@@ -219,3 +219,70 @@ test("inspects capabilities without invoking unsupported SQL schema", async () =
     });
   }
 });
+
+test.each(["sqlite", "duckdb"])(
+  "exports %s query results without describe-query, including empty results",
+  async (engineId) => {
+    const query = vi
+      .fn()
+      .mockResolvedValueOnce({
+        columns: ["name", "value"],
+        rows: [{ name: "a,b", value: 2 }],
+      })
+      .mockResolvedValueOnce({ columns: ["name", "value"], rows: [] })
+      .mockResolvedValueOnce({
+        columns: ["name", "value"],
+        rows: [{ name: "x", value: 1 }],
+        truncated: true,
+      });
+    const describeQuery = vi.fn();
+    const client = {
+      engineId,
+      access: "read-only",
+      capabilities: { operations: ["query"] },
+      query,
+      describeQuery,
+    };
+    const mcpClient = await startClient(
+      createPocketDBMcpServer({
+        connect: (async () => ({
+          client,
+          close: async () => undefined,
+        })) as never,
+      }),
+    );
+    const connected = await mcpClient.callTool({
+      name: "pocketdb_connect",
+      arguments: {
+        invitationUri: "pocketdb://valid",
+        signalingEndpoint: "https://signal.example",
+      },
+    });
+    const {
+      data: { connectionId },
+    } = connected.structuredContent as { data: { connectionId: string } };
+    const exportQuery = () =>
+      mcpClient.callTool({
+        name: "pocketdb_export_query_csv",
+        arguments: {
+          connectionId,
+          sql: "SELECT name, value FROM items",
+          maxRows: 5,
+        },
+      });
+    expect((await exportQuery()).structuredContent).toEqual({
+      ok: true,
+      data: { csv: 'name,value\r\n"a,b",2', rowCount: 1, truncated: false },
+    });
+    expect((await exportQuery()).structuredContent).toEqual({
+      ok: true,
+      data: { csv: "name,value", rowCount: 0, truncated: false },
+    });
+    expect((await exportQuery()).structuredContent).toMatchObject({
+      ok: true,
+      data: { truncated: true },
+    });
+    expect(describeQuery).not.toHaveBeenCalled();
+    expect(query).toHaveBeenCalledTimes(3);
+  },
+);
