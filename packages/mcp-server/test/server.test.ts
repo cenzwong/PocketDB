@@ -1,3 +1,14 @@
+import { createRequire } from "node:module";
+
+const { DatabaseSync } = createRequire(import.meta.url)("node:sqlite") as {
+  DatabaseSync: new (
+    path: string,
+  ) => {
+    exec(sql: string): void;
+    prepare(sql: string): { all(): Record<string, unknown>[] };
+    close(): void;
+  };
+};
 import { Client } from "@modelcontextprotocol/client";
 import { InMemoryTransport } from "@modelcontextprotocol/server";
 import { afterEach, expect, test, vi } from "vitest";
@@ -286,3 +297,55 @@ test.each(["sqlite", "duckdb"])(
     expect(query).toHaveBeenCalledTimes(3);
   },
 );
+
+test("bounds SQLite CSV exports ending in a line comment", async () => {
+  const db = new DatabaseSync(":memory:");
+  db.exec(
+    "CREATE TABLE items(value INTEGER); INSERT INTO items VALUES (1), (2), (3), (4)",
+  );
+  const query = vi.fn(async (sql: string) => ({
+    columns: ["value"],
+    rows: db.prepare(sql).all(),
+  }));
+  const client = {
+    engineId: "sqlite",
+    access: "read-only",
+    capabilities: { operations: ["query"] },
+    query,
+  };
+  const mcpClient = await startClient(
+    createPocketDBMcpServer({
+      connect: (async () => ({
+        client,
+        close: async () => undefined,
+      })) as never,
+    }),
+  );
+  try {
+    const connected = await mcpClient.callTool({
+      name: "pocketdb_connect",
+      arguments: {
+        invitationUri: "pocketdb://valid",
+        signalingEndpoint: "https://signal.example",
+      },
+    });
+    const {
+      data: { connectionId },
+    } = connected.structuredContent as { data: { connectionId: string } };
+    const result = await mcpClient.callTool({
+      name: "pocketdb_export_query_csv",
+      arguments: {
+        connectionId,
+        sql: "SELECT value FROM items -- export rows",
+        maxRows: 1,
+      },
+    });
+    expect(result.structuredContent).toEqual({
+      ok: true,
+      data: { csv: "value\r\n1", rowCount: 1, truncated: true },
+    });
+    expect((await query.mock.results[0].value).rows).toHaveLength(2);
+  } finally {
+    db.close();
+  }
+});

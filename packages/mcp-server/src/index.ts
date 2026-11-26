@@ -237,7 +237,7 @@ export function createPocketDBMcpServer(options: PocketDBMcpOptions = {}) {
           ? await connection.client.describeQuery(sql)
           : undefined;
         const result = (await connection.client.query(
-          `${sql.trim()} LIMIT ${maxRows + 1}`,
+          `${sql.trim()}\nLIMIT ${maxRows + 1}`,
         )) as {
           rows?: Record<string, unknown>[];
           columns?: string[];

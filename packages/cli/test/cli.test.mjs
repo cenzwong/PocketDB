@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { once } from "node:events";
 import { createConnection } from "node:net";
+import { DatabaseSync } from "node:sqlite";
 import { describe, it } from "node:test";
 import pg from "pg";
 import { createPostgresBridge } from "../src/postgres-bridge.mjs";
@@ -344,6 +345,44 @@ describe("PocketDB CLI parsing and command execution", () => {
     assert.equal(output.data.split("\n").length, 2);
     assert.match(connected.calls[0][1], /LIMIT 3$/);
     assert.equal(connected.closeCalls, 1);
+  });
+
+  it("bounds exports whose SQL ends in a line comment", async () => {
+    const db = new DatabaseSync(":memory:");
+    try {
+      db.exec(
+        "CREATE TABLE items(value INTEGER); INSERT INTO items VALUES (1), (2), (3), (4)",
+      );
+      const connected = fakeConnection("sqlite");
+      let fetched = 0;
+      connected.client.query = async (sql) => {
+        const rows = db.prepare(sql).all();
+        fetched = rows.length;
+        return { rows };
+      };
+      const streams = io();
+      const status = await main(
+        [
+          "export",
+          uri,
+          "--query",
+          "SELECT value FROM items -- export rows",
+          "--max-rows",
+          "1",
+          "--json",
+        ],
+        streams,
+        {
+          env: { POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api" },
+          connect: async () => connected,
+        },
+      );
+      assert.equal(status, 0);
+      assert.equal(fetched, 2);
+      assert.equal(JSON.parse(streams.output().stdout).truncated, true);
+    } finally {
+      db.close();
+    }
   });
 
   it("preserves backend truncation for JSONL exports, including empty results", async () => {

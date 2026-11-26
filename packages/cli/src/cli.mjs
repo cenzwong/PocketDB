@@ -410,7 +410,7 @@ function wrapBoundedReadQuery(sql, maxRows) {
       "export accepts one SELECT query without an existing LIMIT or embedded semicolons.",
     );
   }
-  return `${clean} LIMIT ${maxRows + 1}`;
+  return `${clean}\nLIMIT ${maxRows + 1}`;
 }
 
 function jsonSafe(value) {
