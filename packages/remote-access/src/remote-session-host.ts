@@ -455,20 +455,19 @@ export class RemoteSessionHost {
           encodeEnvelope(result, { maxBytes: this.maxResultBytes });
           record.result = result;
         } catch (cause) {
-          if (
-            !(cause instanceof ProtocolCodecError) ||
-            cause.code !== "message-too-large"
-          ) {
-            throw cause;
-          }
+          const tooLarge =
+            cause instanceof ProtocolCodecError &&
+            cause.code === "message-too-large";
           record.result = {
             version: 1,
             type: "error",
             id: envelope.id,
             sessionId: envelope.sessionId,
             error: {
-              code: "result-too-large",
-              message: `The completed operation result exceeds the ${this.maxResultBytes}-byte response limit. Its outcome is unknown to the client.`,
+              code: tooLarge ? "result-too-large" : "result-encoding-failed",
+              message: tooLarge
+                ? `The completed operation result exceeds the ${this.maxResultBytes}-byte response limit. Its outcome is unknown to the client.`
+                : "The completed operation result could not be encoded. Its outcome is unknown to the client.",
               retryable: false,
               outcome: "unknown",
             },

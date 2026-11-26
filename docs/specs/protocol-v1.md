@@ -16,7 +16,7 @@ All request messages carry an `id`; the correlated `response` or `error` echoes 
 | --- | --- | --- |
 | `hello` | `id`, `supportedVersions` | Begin version negotiation. |
 | `hello-ack` | `id`, `selectedVersion`, `engines` | Confirm the selected version and advertised capabilities. |
-| `authenticate` | `id`, `invitation`, `peerIdentity` | Present the scoped invitation and the client's base64url SPKI public key. |
+| `authenticate` | `id`, `invitation`, `peerIdentity` | Present the invitation routing scope without the capability and the client's base64url SPKI public key. |
 | `authentication-challenge` | `id`, `nonce`, `clientIdentity`, `hostPublicKey`, `expiresAt`, `signature` | Return the host-signed, single-use peer-binding challenge. |
 | `authentication-proof` | `id`, `nonce`, `identityProof`, `capabilityProof` | Prove client key possession and invitation capability over the signed transcript. |
 | `authenticated` | `id`, `sessionId`, `instanceId`, `engineId` | Report the identity-bound session. |

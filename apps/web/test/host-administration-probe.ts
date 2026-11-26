@@ -158,7 +158,7 @@ export async function runHostAdministrationProbe(): Promise<unknown> {
           ? String(error.code)
           : "unknown-error",
     );
-    if (authenticationFailure !== "authentication-failed") {
+    if (authenticationFailure !== "authentication-invalid-identity") {
       throw new Error(
         `Unexpected invalid-capability result: ${authenticationFailure}`,
       );

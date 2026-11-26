@@ -282,19 +282,27 @@ export class HostAdministration {
       }
       record.pending = discovered;
       const connectedPeer = discovered;
-      const binding = await readPeerBinding(
-        connectedPeer.peerConnection,
-        "host",
-      );
-      if (record.controller.signal.aborted || this.disposed) return;
+      const binding = readPeerBinding(connectedPeer.peerConnection, "host");
+      let authenticationQueue = Promise.resolve();
       const unsubscribe = connectedPeer.transport.onMessage((bytes) => {
-        void this.handleAuthenticationMessage(
-          bytes,
-          record,
-          connectedPeer,
-          binding,
-          unsubscribe,
-        );
+        authenticationQueue = authenticationQueue
+          .then(async () => {
+            const peerBinding = await binding;
+            if (record.controller.signal.aborted || this.disposed) return;
+            await this.handleAuthenticationMessage(
+              bytes,
+              record,
+              connectedPeer,
+              peerBinding,
+              unsubscribe,
+            );
+          })
+          .catch(() => {
+            void this.revokeInvitation(record.invitation.roomId);
+          });
+      });
+      void binding.catch(() => {
+        void this.revokeInvitation(record.invitation.roomId);
       });
       record.pendingUnsubscribe = unsubscribe;
       connectedPeer.transport.onStateChange((event) => {
@@ -466,7 +474,6 @@ function sameInvitation(value: unknown, expected: Invitation): boolean {
     invitation.engineId === expected.engineId &&
     invitation.expectedHostId === expected.expectedHostId &&
     invitation.access === expected.access &&
-    invitation.capability === expected.capability &&
     invitation.expiresAt === expected.expiresAt
   );
 }

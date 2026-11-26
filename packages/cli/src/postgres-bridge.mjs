@@ -563,6 +563,7 @@ function dataRow(row, fields) {
 }
 function fieldText(value, oid) {
   if (oid === JSON_OID || oid === JSONB_OID) return JSON.stringify(value);
+  if (oid === 16 && typeof value === "boolean") return value ? "t" : "f";
   if (Array.isArray(value)) return arrayText(value, oid);
   if (value instanceof Uint8Array)
     return `\\x${Buffer.from(value).toString("hex")}`;
@@ -570,12 +571,13 @@ function fieldText(value, oid) {
 }
 
 function arrayText(values, oid) {
-  const jsonElementOid = JSON_ARRAY_ELEMENT_OIDS.get(oid);
+  const jsonElementOid =
+    JSON_ARRAY_ELEMENT_OIDS.get(oid) ?? (oid === 1000 ? 16 : undefined);
   const delimiter = oid === BOX_ARRAY_OID ? ";" : ",";
   const elements = values.map((value) => {
     if (value === null || value === undefined) return "NULL";
     // A decoded JSON document may itself be an array.
-    if (Array.isArray(value) && jsonElementOid === undefined)
+    if (Array.isArray(value) && !JSON_ARRAY_ELEMENT_OIDS.has(oid))
       return arrayText(value, oid);
     const text = fieldText(value, jsonElementOid);
     return `"${text.replace(/["\\]/g, "\\$&")}"`;

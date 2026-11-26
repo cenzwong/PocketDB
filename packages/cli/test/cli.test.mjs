@@ -753,3 +753,60 @@ it("rejects PostgreSQL bridge connections without PostgreSQL metadata", async ()
     });
   }
 });
+
+it("uses query liveness and capability-only inspection for SQL engines without schema", async () => {
+  const env = { POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api" };
+  for (const engine of ["sqlite", "duckdb"]) {
+    for (const command of ["ping", "inspect"]) {
+      const connection = fakeConnection(engine);
+      connection.client.capabilities.operations = ["query"];
+      const streams = io();
+      const status = await main([command, uri, "--json"], streams, {
+        env,
+        connect: async () => connection,
+      });
+      assert.equal(status, 0, streams.output().stderr);
+      const result = JSON.parse(streams.output().stdout);
+      assert.deepEqual(result.capabilities.operations, ["query"]);
+      if (command === "ping") {
+        assert.equal(result.response, "PONG");
+        assert.equal(connection.calls[0][1], "SELECT 1");
+      } else {
+        assert.equal(result.schema, undefined);
+        assert.equal(connection.calls.length, 0);
+      }
+    }
+  }
+});
+
+it("encodes PostgreSQL boolean cells using t and f", async () => {
+  const bridge = await createPostgresBridge(
+    {
+      engineId: "postgresql",
+      query: async () => ({
+        rows: [[true, false]],
+        fields: [
+          { name: "yes", dataTypeID: 16 },
+          { name: "no", dataTypeID: 16 },
+        ],
+      }),
+    },
+    { port: 0 },
+  );
+  const types = { getTypeParser: () => (text) => text };
+  const driver = new pg.Client({
+    host: bridge.host,
+    port: bridge.port,
+    user: "pocketdb",
+    types,
+  });
+  try {
+    await driver.connect();
+    assert.deepEqual((await driver.query("SELECT true, false")).rows, [
+      { yes: "t", no: "f" },
+    ]);
+  } finally {
+    await driver.end();
+    await bridge.close();
+  }
+});

@@ -319,18 +319,28 @@ async function execute(options, invitation, dependencies) {
         const response =
           client.engineId === "kv"
             ? await client.kv.ping({ timeoutMs: options.requestTimeoutMs })
-            : await client
-                .schema({ timeoutMs: options.requestTimeoutMs })
-                .then(() => "PONG");
+            : await (client.capabilities.operations.includes("schema")
+                ? client.schema({ timeoutMs: options.requestTimeoutMs })
+                : client.query("SELECT 1", [], {
+                    timeoutMs: options.requestTimeoutMs,
+                  })
+              ).then(() => "PONG");
         return {
           ...summary,
           response,
-          ...(client.engineId === "kv" ? {} : { probe: "schema" }),
+          ...(client.engineId === "kv"
+            ? {}
+            : {
+                probe: client.capabilities.operations.includes("schema")
+                  ? "schema"
+                  : "query",
+              }),
         };
       }
       case "inspect": {
         const schema =
-          client.engineId === "kv"
+          client.engineId === "kv" ||
+          !client.capabilities.operations.includes("schema")
             ? undefined
             : await client.schema({ timeoutMs: options.requestTimeoutMs });
         return { ...summary, ...(schema ? { schema } : {}) };

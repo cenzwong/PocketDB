@@ -519,6 +519,24 @@ describe("RemoteSessionHost", () => {
       id: "result-size-get",
       error: { code: "result-too-large", outcome: "unknown" },
     });
+    vi.spyOn(resultRuntime, "execute").mockResolvedValueOnce({
+      value: Infinity,
+    });
+    await expect(
+      resultClient.exchange({
+        version: 1,
+        type: "request",
+        id: "result-invalid",
+        sessionId: "result-size-session",
+        instanceId: authSession.instanceId,
+        engineId: authSession.engineId,
+        operation: "SET",
+        payload: ["key", "value"],
+      }),
+    ).resolves.toMatchObject({
+      type: "error",
+      error: { code: "result-encoding-failed", outcome: "unknown" },
+    });
     expect(resultPair.right.state).toBe("connected");
     await resultHost.close();
     await resultRuntime.stopInstance(authSession.instanceId);

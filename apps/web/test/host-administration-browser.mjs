@@ -41,7 +41,10 @@ try {
     assert.equal(result.result.transportFailureLogged, true);
     assert.ok(result.result.remoteRequestsMeasured >= 2);
     assert.equal(result.result.disconnectRevokesLink, true);
-    assert.equal(result.result.authenticationFailure, "authentication-failed");
+    assert.equal(
+      result.result.authenticationFailure,
+      "authentication-invalid-identity",
+    );
     assert.equal(result.result.invalidCapabilityRevoked, true);
     const clientConsole = await probePage.evaluate(
       `import('/test/client-console-probe.ts').then(module => module.runClientConsoleProbe()).then(result => ({ result }), error => ({ error: error instanceof Error ? error.stack || error.message : String(error) }))`,

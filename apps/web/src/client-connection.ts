@@ -106,7 +106,6 @@ async function authenticate(
       engineId: invitation.engineId,
       expectedHostId: invitation.expectedHostId,
       access: invitation.access,
-      capability: invitation.capability,
       ...(invitation.expiresAt === undefined
         ? {}
         : { expiresAt: invitation.expiresAt }),

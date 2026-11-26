@@ -345,7 +345,11 @@ export function mountDistributedConsole(root: HTMLElement): void {
         new YjsReplica({
           localWriteAccess: parsed.access === "read-write",
         });
-      if (previous && previous.invitation.instanceId !== parsed.instanceId)
+      if (
+        previous &&
+        (previous.invitation.instanceId !== parsed.instanceId ||
+          previous.invitation.expectedHostId !== parsed.expectedHostId)
+      )
         throw new Error("Reconnect invitation targets a different replica.");
       const peer = new RTCPeerConnection({ iceServers: [] });
       const channel = peer.createDataChannel("pocketdb-crdt", {
@@ -601,7 +605,7 @@ export function mountDistributedConsole(root: HTMLElement): void {
 
   async function clientChannelOpened(current: ClientPeer): Promise<void> {
     try {
-      current.binding = await readPeerBinding(current.peer, "client");
+      const binding = readPeerBinding(current.peer, "client");
       const handle = async (messageEvent: MessageEvent): Promise<void> => {
         if (typeof messageEvent.data !== "string") return;
         let message: Record<string, unknown>;
@@ -611,10 +615,18 @@ export function mountDistributedConsole(root: HTMLElement): void {
           return;
         }
         if (message.type === "host-ready") {
+          try {
+            current.binding = await binding;
+          } catch (error) {
+            status(clientStatus, safeError(error), "error");
+            return;
+          }
+          const { capability: _capability, ...invitationScope } =
+            current.invitation;
           current.channel.send(
             JSON.stringify({
               type: "authenticate",
-              invitation: current.invitation,
+              invitation: invitationScope,
               peerIdentity: await exportPeerPublicKey(
                 current.identity.publicKey,
               ),
@@ -699,6 +711,9 @@ export function mountDistributedConsole(root: HTMLElement): void {
         }
       };
       current.channel.addEventListener("message", handle);
+      void binding.catch((error: unknown) =>
+        status(clientStatus, safeError(error), "error"),
+      );
       status(
         clientStatus,
         "Peer channel open; waiting for host authentication.",
@@ -807,7 +822,6 @@ function sameInvitation(value: unknown, expected: Invitation): boolean {
     received.engineId === expected.engineId &&
     received.expectedHostId === expected.expectedHostId &&
     received.access === expected.access &&
-    received.capability === expected.capability &&
     received.expiresAt === expected.expiresAt
   );
 }

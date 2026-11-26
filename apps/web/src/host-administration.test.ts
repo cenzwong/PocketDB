@@ -27,11 +27,15 @@ it("closes a connected peer that has not authenticated on revocation", async () 
       { fingerprintAlgorithm: "sha-256", fingerprint: "BB:".repeat(31) + "BB" },
     ],
   ]);
+  let finishStats: (value: typeof certificates) => void = () => {};
+  const pendingStats = new Promise<typeof certificates>((resolve) => {
+    finishStats = resolve;
+  });
   const onMessage = vi.fn(() => unsubscribe);
   vi.spyOn(WebRTCDiscoveryAdapter.prototype, "connect").mockResolvedValue({
     peerConnection: {
       connectionState: "connected",
-      getStats: async () => certificates,
+      getStats: () => pendingStats,
     },
     transport: { onMessage, onStateChange: () => () => undefined },
     close,
@@ -44,6 +48,7 @@ it("closes a connected peer that has not authenticated on revocation", async () 
   );
   await vi.waitFor(() => expect(onMessage).toHaveBeenCalled());
   await host.revokeInvitation(invitation.id);
+  finishStats(certificates);
   expect(unsubscribe).toHaveBeenCalledOnce();
   expect(close).toHaveBeenCalledOnce();
   await host.close();

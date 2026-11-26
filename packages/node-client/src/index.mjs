@@ -146,11 +146,12 @@ async function authenticate(
 ) {
   const authenticateId = `authenticate-${randomUUID()}`;
   const proofId = `proof-${randomUUID()}`;
+  const { capability: _capability, ...invitationScope } = invitation;
   await send(transport, {
     version: 1,
     type: "authenticate",
     id: authenticateId,
-    invitation,
+    invitation: invitationScope,
     peerIdentity: await exportPeerPublicKey(identity.publicKey),
   });
   const challenge = await waitForEnvelope(
