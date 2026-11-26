@@ -91,6 +91,25 @@ async function run(): Promise<void> {
       "Empty result lost its column metadata.",
     );
 
+    stage = "list values";
+    const lists = await query(
+      instance,
+      session,
+      "SELECT [1, NULL, 2] AS items, [[1, 2], [], [3]] AS nested, [123.45::DECIMAL(10,2), -0.09::DECIMAL(10,2), NULL] AS decimals, ['a', NULL, 'b'] AS labels",
+    );
+    assertImport(
+      JSON.stringify(resultRows(lists)) ===
+        JSON.stringify([
+          {
+            items: [1, null, 2],
+            nested: [[1, 2], [], [3]],
+            decimals: ["123.45", "-0.09", null],
+            labels: ["a", null, "b"],
+          },
+        ]),
+      `List normalization failed: ${JSON.stringify(lists)}`,
+    );
+
     stage = "read-only transaction";
     const reader = await instance.openSession({
       instanceId: instance.id,

@@ -203,15 +203,11 @@ export class ReplicaSyncSession {
           { cause },
         );
       }
-      if (!isEmptyUpdate(update)) {
-        if (
-          this.authorization.role === "client" &&
-          session.access !== "read-write"
-        )
-          throw new ReplicaSyncError(
-            "unauthorized-peer",
-            "This member cannot publish replica updates.",
-          );
+      if (
+        !isEmptyUpdate(update) &&
+        (this.authorization.role !== "client" ||
+          session.access === "read-write")
+      ) {
         await this.sendFrame(UPDATE_FRAME, update);
       }
       if (!this.repliedToStateVector) {

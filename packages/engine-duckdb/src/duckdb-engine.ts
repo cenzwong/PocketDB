@@ -615,6 +615,24 @@ function normalizeValue(
       normalizeValue(item),
     );
   }
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "data" in value &&
+    Array.isArray(value.data) &&
+    "type" in value &&
+    typeof value.type === "object" &&
+    value.type !== null &&
+    "get" in value &&
+    typeof value.get === "function" &&
+    Symbol.iterator in value &&
+    typeof value[Symbol.iterator] === "function"
+  ) {
+    const vector = value as Iterable<unknown> & {
+      type: { toString(): string; scale?: number };
+    };
+    return Array.from(vector, (item) => normalizeValue(item, vector.type));
+  }
   if (typeof value === "object" && value !== null) {
     return Object.fromEntries(
       Object.entries(value).map(([key, item]) => [key, normalizeValue(item)]),

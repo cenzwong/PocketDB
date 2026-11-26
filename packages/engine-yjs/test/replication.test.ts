@@ -153,6 +153,51 @@ describe("authenticated Yjs replica synchronization", () => {
     }
   });
 
+  it("reconnects a read-only replica with retained deletions and receives later host updates", async () => {
+    const host = new YjsReplica();
+    const reader = new YjsReplica({ localWriteAccess: false });
+    const hostIdentity = await createPeerIdentity();
+    const readerIdentity = await createPeerIdentity();
+    try {
+      host.map<string>("items").set("removed", "original");
+      host.map<string>("items").set("changed", "original");
+      const first = await createAuthenticatedPair(
+        hostIdentity,
+        readerIdentity,
+        "read-only",
+      );
+      const firstSessions = createSessions(host, reader, first);
+      await Promise.all([
+        firstSessions.host.start(),
+        firstSessions.client.start(),
+      ]);
+      await waitFor(() => sameValues(host, reader));
+      host.map<string>("items").delete("removed");
+      host.map<string>("items").set("changed", "updated");
+      await waitFor(() => sameValues(host, reader));
+      await first.pair.left.disconnect("reconnect");
+
+      const second = await createAuthenticatedPair(
+        hostIdentity,
+        readerIdentity,
+        "read-only",
+      );
+      const sessions = createSessions(host, reader, second);
+      await Promise.all([sessions.host.start(), sessions.client.start()]);
+      host.map<string>("items").set("after", "received");
+      await waitFor(
+        () => reader.map<string>("items").get("after") === "received",
+      );
+      expect(sessions.client.state).toBe("connected");
+      expect(sessions.host.state).toBe("connected");
+      expect(sameValues(host, reader)).toBe(true);
+      await sessions.client.close();
+    } finally {
+      host.destroy();
+      reader.destroy();
+    }
+  });
+
   it("rejects updates from read-only members and oversized update frames", async () => {
     const host = new YjsReplica();
     const client = new YjsReplica({ localWriteAccess: false });
