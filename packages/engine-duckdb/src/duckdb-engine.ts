@@ -599,12 +599,15 @@ function isSingleSelect(sql: string): boolean {
   return /^SELECT\b/i.test(trimmed) && !trimmed.includes(";");
 }
 
+interface ArrowValueType {
+  toString(): string;
+  scale?: number;
+  children?: ReadonlyArray<{ name: string; type: ArrowValueType }>;
+}
+
 function normalizeRow(
   row: unknown,
-  fields: ReadonlyArray<{
-    name: string;
-    type: { toString(): string; scale?: number };
-  }> = [],
+  fields: ReadonlyArray<{ name: string; type: ArrowValueType }> = [],
 ): Record<string, unknown> {
   if (typeof row !== "object" || row === null || Array.isArray(row)) {
     throw new EngineOperationError(
@@ -621,10 +624,7 @@ function normalizeRow(
   );
 }
 
-function normalizeValue(
-  value: unknown,
-  arrowType?: { toString(): string; scale?: number },
-): unknown {
+function normalizeValue(value: unknown, arrowType?: ArrowValueType): unknown {
   if (value instanceof Date) return value.toISOString();
   if (Array.isArray(value)) return value.map((item) => normalizeValue(item));
   if (
@@ -660,13 +660,19 @@ function normalizeValue(
     typeof value[Symbol.iterator] === "function"
   ) {
     const vector = value as Iterable<unknown> & {
-      type: { toString(): string; scale?: number };
+      type: ArrowValueType;
     };
     return Array.from(vector, (item) => normalizeValue(item, vector.type));
   }
   if (typeof value === "object" && value !== null) {
+    const childTypes = new Map(
+      arrowType?.children?.map(({ name, type }) => [name, type]),
+    );
     return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [key, normalizeValue(item)]),
+      Object.entries(value).map(([key, item]) => [
+        key,
+        normalizeValue(item, childTypes.get(key)),
+      ]),
     );
   }
   if (

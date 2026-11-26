@@ -110,6 +110,29 @@ async function run(): Promise<void> {
       `List normalization failed: ${JSON.stringify(lists)}`,
     );
 
+    stage = "nested struct values";
+    const structs = await query(
+      instance,
+      session,
+      `SELECT
+      {'amount': 123.45::DECIMAL(10,2), 'nested': {'debt': -0.09::DECIMAL(10,2)}, 'values': [1.23::DECIMAL(10,2), NULL]} AS invoice,
+      [{'amount': 4.56::DECIMAL(10,2)}, {'amount': -7.89::DECIMAL(10,2)}] AS invoices`,
+    );
+    assertImport(
+      JSON.stringify(resultRows(structs)) ===
+        JSON.stringify([
+          {
+            invoice: {
+              amount: "123.45",
+              nested: { debt: "-0.09" },
+              values: ["1.23", null],
+            },
+            invoices: [{ amount: "4.56" }, { amount: "-7.89" }],
+          },
+        ]),
+      `Nested struct values lost their type information: ${JSON.stringify(structs)}`,
+    );
+
     stage = "commented transaction ownership";
     const other = await instance.openSession({
       instanceId: instance.id,
