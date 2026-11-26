@@ -713,3 +713,43 @@ it("returns zero affected rows for UPDATE and DELETE", async () => {
     await bridge.close();
   }
 });
+
+it("formats nested bigint query and export results losslessly", async () => {
+  const value = {
+    rows: [{ id: 9223372036854775807n, nested: [-9223372036854775808n] }],
+  };
+  const env = { POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api" };
+  for (const mode of ["--json", undefined]) {
+    const streams = io();
+    const status = await main(
+      ["query", uri, "SELECT id FROM items", ...(mode ? [mode] : [])],
+      streams,
+      {
+        env,
+        connect: async () => fakeConnection("sqlite", { queryResult: value }),
+      },
+    );
+    assert.equal(status, 0, streams.output().stderr);
+    assert.match(streams.output().stdout, /9223372036854775807/);
+    assert.match(streams.output().stdout, /-9223372036854775808/);
+  }
+  const streams = io();
+  const status = await main(
+    ["export", uri, "--query", "SELECT id FROM items", "--json"],
+    streams,
+    {
+      env,
+      connect: async () => fakeConnection("sqlite", { queryResult: value }),
+    },
+  );
+  assert.equal(status, 0, streams.output().stderr);
+  assert.match(streams.output().stdout, /9223372036854775807/);
+});
+
+it("rejects PostgreSQL bridge connections without PostgreSQL metadata", async () => {
+  for (const engineId of ["sqlite", "duckdb", "kv"]) {
+    await assert.rejects(createPostgresBridge({ engineId }, { port: 0 }), {
+      code: "unsupported-operation",
+    });
+  }
+});

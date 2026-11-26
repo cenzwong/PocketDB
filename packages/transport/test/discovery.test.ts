@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   HttpRoomSignalingAdapter,
+  WebRTCDiscoveryAdapter,
   SignalingError,
   validateIceConfiguration,
 } from "../src/discovery";
@@ -100,4 +101,75 @@ describe("HTTP room signaling adapter", () => {
       }),
     ).not.toThrow();
   });
+});
+
+describe("answerer data-channel discovery", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  it.each(["timeout", "abort", "failed"] as const)(
+    "closes the peer on %s",
+    async (mode) => {
+      let peer: FakePeer | undefined;
+      class FakePeer extends EventTarget {
+        connectionState = "new";
+        iceGatheringState = "complete";
+        localDescription = {
+          type: "answer",
+          sdp: "answer",
+          toJSON: () => ({ type: "answer", sdp: "answer" }),
+        };
+        closed = false;
+        constructor() {
+          super();
+          peer = this;
+        }
+        async setRemoteDescription() {}
+        async createAnswer() {
+          return this.localDescription;
+        }
+        async setLocalDescription() {}
+        close() {
+          this.closed = true;
+        }
+      }
+      vi.stubGlobal("RTCPeerConnection", FakePeer);
+      let markPublished = () => {};
+      const published = new Promise<void>((resolve) => {
+        markPublished = resolve;
+      });
+      const signaling = {
+        id: "test",
+        receiveDescription: async () => ({
+          type: "offer" as const,
+          sdp: "offer",
+        }),
+        publishDescription: async () => {
+          markPublished();
+        },
+      };
+      const controller = new AbortController();
+      const connecting = new WebRTCDiscoveryAdapter(signaling).connect({
+        roomId: "room-test-1",
+        peerId: "client",
+        role: "answerer",
+        connectTimeoutMs: 100,
+        signal: controller.signal,
+      });
+      const outcome = expect(connecting).rejects.toMatchObject({
+        code:
+          mode === "abort"
+            ? "signaling-aborted"
+            : mode === "failed"
+              ? "peer-connection-failed"
+              : "data-channel-timeout",
+      });
+      await published;
+      if (mode === "abort") controller.abort();
+      if (mode === "failed" && peer) {
+        peer.connectionState = "failed";
+        peer.dispatchEvent(new Event("connectionstatechange"));
+      }
+      await outcome;
+      await vi.waitFor(() => expect(peer?.closed).toBe(true));
+    },
+  );
 });

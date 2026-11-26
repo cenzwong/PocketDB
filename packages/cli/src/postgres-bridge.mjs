@@ -45,10 +45,10 @@ export async function createPostgresBridge(
       "Port must be an integer from 0 to 65535.",
     );
   }
-  if (client.engineId === "kv") {
+  if (client.engineId !== "postgresql") {
     throw bridgeError(
       "unsupported-operation",
-      "PostgreSQL bridge requires a SQL engine invitation.",
+      "PostgreSQL bridge requires a PostgreSQL engine invitation.",
     );
   }
 

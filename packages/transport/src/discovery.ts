@@ -75,7 +75,9 @@ export type SignalingErrorCode =
   | "signaling-invalid-response"
   | "signaling-aborted"
   | "invalid-ice-configuration"
-  | "ice-gathering-timeout";
+  | "ice-gathering-timeout"
+  | "data-channel-timeout"
+  | "peer-connection-failed";
 
 export class SignalingError extends Error {
   constructor(
@@ -302,6 +304,7 @@ export class WebRTCDiscoveryAdapter implements DiscoveryAdapter {
       iceErrorCodes.add(event.errorCode);
     });
     let dataChannel: RTCDataChannel | undefined;
+    let cancelChannelWait: (() => void) | undefined;
     try {
       if (config.role === "offerer") {
         dataChannel = peerConnection.createDataChannel(
@@ -329,15 +332,64 @@ export class WebRTCDiscoveryAdapter implements DiscoveryAdapter {
         );
         await peerConnection.setRemoteDescription(answer);
       } else {
-        const channel = new Promise<RTCDataChannel>((resolve) => {
-          peerConnection.addEventListener(
-            "datachannel",
-            (event) => resolve(event.channel),
-            {
-              once: true,
-            },
-          );
+        const channel = new Promise<RTCDataChannel>((resolve, reject) => {
+          const cleanup = () => {
+            clearTimeout(timer);
+            peerConnection.removeEventListener("datachannel", onChannel);
+            peerConnection.removeEventListener(
+              "connectionstatechange",
+              onState,
+            );
+            config.signal?.removeEventListener("abort", onAbort);
+          };
+          const onChannel = (event: RTCDataChannelEvent) => {
+            cleanup();
+            resolve(event.channel);
+          };
+          const onState = () => {
+            if (
+              peerConnection.connectionState === "failed" ||
+              peerConnection.connectionState === "closed"
+            ) {
+              cleanup();
+              reject(
+                new SignalingError(
+                  "peer-connection-failed",
+                  "Peer connection failed before the data channel arrived.",
+                ),
+              );
+            }
+          };
+          const onAbort = () => {
+            cleanup();
+            reject(
+              new SignalingError(
+                "signaling-aborted",
+                "Peer discovery was cancelled.",
+              ),
+            );
+          };
+          const timer = setTimeout(() => {
+            cleanup();
+            reject(
+              new SignalingError(
+                "data-channel-timeout",
+                "Timed out waiting for the peer data channel.",
+              ),
+            );
+          }, config.connectTimeoutMs ?? DEFAULT_SIGNAL_TIMEOUT_MS);
+          cancelChannelWait = cleanup;
+          peerConnection.addEventListener("datachannel", onChannel);
+          peerConnection.addEventListener("connectionstatechange", onState);
+          if (config.signal?.aborted) onAbort();
+          else
+            config.signal?.addEventListener("abort", onAbort, { once: true });
         });
+        // Attach the rejection handler before signaling can yield.
+        const channelResult = channel.then(
+          (value) => ({ value }),
+          (error: unknown) => ({ error }),
+        );
         const offer = await this.signaling.receiveDescription(
           config.roomId,
           "offer",
@@ -356,7 +408,9 @@ export class WebRTCDiscoveryAdapter implements DiscoveryAdapter {
           answer,
           config.signal,
         );
-        dataChannel = await channel;
+        const result = await channelResult;
+        if ("error" in result) throw result.error;
+        dataChannel = result.value;
       }
       if (!dataChannel)
         throw new Error("Peer negotiation did not create a data channel.");
@@ -437,6 +491,7 @@ export class WebRTCDiscoveryAdapter implements DiscoveryAdapter {
         },
       };
     } catch (cause) {
+      cancelChannelWait?.();
       dataChannel?.close();
       peerConnection.close();
       if (cause instanceof SignalingError) throw cause;

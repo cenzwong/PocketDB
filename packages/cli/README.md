@@ -59,6 +59,9 @@ read-write invitation only for the intended driver session and stop the bridge
 when done. Each invitation owns one local driver connection; separate driver
 sessions need separate invitations and bridge processes.
 
+The PostgreSQL bridge accepts PostgreSQL engine invitations. CLI JSON output
+represents bigint values as decimal strings.
+
 The verified PostgreSQL subset covers protocol v3 startup, text-format simple
 and parameterized queries, result rows, and transactions. Result arrays use
 PostgreSQL text format, and backend SQLSTATE codes are returned to the driver.

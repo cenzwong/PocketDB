@@ -25,7 +25,7 @@ export async function main(argv, io = process, dependencies = {}) {
     if (parsed.bridgePort !== undefined) {
       return await runBridge(parsed, invitation, io, dependencies);
     }
-    const result = await execute(parsed, invitation, dependencies);
+    const result = jsonSafe(await execute(parsed, invitation, dependencies));
     if (parsed.format === "json") {
       io.stdout.write(`${JSON.stringify(result)}\n`);
     } else {
@@ -403,6 +403,7 @@ function wrapBoundedReadQuery(sql, maxRows) {
 }
 
 function jsonSafe(value) {
+  if (typeof value === "bigint") return value.toString();
   if (value instanceof Uint8Array) {
     return { $type: "bytes", base64: Buffer.from(value).toString("base64") };
   }
