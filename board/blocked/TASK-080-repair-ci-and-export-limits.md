@@ -19,7 +19,7 @@ Resolve the reported browser integration failure and bound exports with trailing
 # Implementation Notes
 
 - CLI and MCP exports put generated LIMIT clauses on a new line, ending any trailing SQL line comment.
-- CI run 45843300491 failed host administration browser authentication because signature verification reported a different peer binding. The same commit had a separate passing run, and local runs passed; the available logs do not identify the divergent signed input. No authentication changes were made without evidence.
+- CI run 45843300491 failed host administration browser authentication because signature verification reported a different peer binding. The same commit had a separate passing run, and local runs passed; the available logs do not identify the divergent signed input. The failing original and rerun used Chrome 158, while the passing run used Chrome 157; local Chrome 160 passed. The browser test records only differing signed-field indices on future failures. No authentication changes were made without evidence.
 
 # Validation
 
@@ -31,5 +31,5 @@ Node 26.13.0 and pnpm 11.25.0.
 
 # Blocker
 
-The original CI log only reports failed challenge verification; a recurrence with binding and transcript diagnostics or another reproducible cause is needed to identify a safe authentication fix.
+Both original CI attempt and rerun report failed challenge verification; a recurrence with the added failure-only transcript diagnostics or another reproducible cause is needed to identify a safe authentication fix.
 

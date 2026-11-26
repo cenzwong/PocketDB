@@ -23,8 +23,35 @@ try {
   const outcome = await withBrowser(async ({ page, version }) => {
     const probePage = await page(url);
     await probePage.wait("Boolean(document.querySelector('#app'))");
+    await probePage.evaluate(`(() => {
+      const signed = [];
+      const originalSign = SubtleCrypto.prototype.sign;
+      const originalVerify = SubtleCrypto.prototype.verify;
+      window.__authDiagnostics = [];
+      const fields = data => {
+        try {
+          const value = JSON.parse(new TextDecoder().decode(data));
+          return Array.isArray(value) && value[0] === 'host' ? value : undefined;
+        } catch { return undefined; }
+      };
+      SubtleCrypto.prototype.sign = async function(algorithm, key, data) {
+        const result = await originalSign.call(this, algorithm, key, data);
+        const transcript = fields(data);
+        if (transcript) signed.push(transcript);
+        return result;
+      };
+      SubtleCrypto.prototype.verify = async function(algorithm, key, signature, data) {
+        const result = await originalVerify.call(this, algorithm, key, signature, data);
+        const transcript = fields(data);
+        if (transcript && !result) {
+          const matching = signed.find(item => item[11] === transcript[11]);
+          window.__authDiagnostics.push({ matchingChallenge: Boolean(matching), differingFields: matching ? transcript.map((value, index) => value === matching[index] ? -1 : index).filter(index => index >= 0) : [] });
+        }
+        return result;
+      };
+    })()`);
     const result = await probePage.evaluate(
-      `import('/test/host-administration-probe.ts').then(module => module.runHostAdministrationProbe()).then(result => ({ result }), error => ({ error: error instanceof Error ? error.stack || error.message : String(error) }))`,
+      `import('/test/host-administration-probe.ts').then(module => module.runHostAdministrationProbe()).then(result => ({ result }), error => ({ error: error instanceof Error ? error.stack || error.message : String(error), diagnostics: window.__authDiagnostics }))`,
     );
     assert.equal(result.error, undefined, JSON.stringify(result));
     assert.equal(result.result.ok, true, JSON.stringify(result));
