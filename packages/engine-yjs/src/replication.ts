@@ -10,7 +10,6 @@ const FRAME_PREFIX = new Uint8Array([0x50, 0x44, 0x01]);
 const FRAME_HEADER_BYTES = FRAME_PREFIX.byteLength + 1;
 const STATE_VECTOR_FRAME = 1;
 const UPDATE_FRAME = 2;
-const REMOTE_UPDATE_ORIGIN = Object.freeze({ source: "authenticated-replica" });
 
 export type ReplicaSyncRole = "host" | "client";
 export type ReplicaSyncState = "new" | "connected" | "closed" | "failed";
@@ -48,6 +47,7 @@ export class ReplicaSyncError extends Error {
 
 /** Synchronizes one replica over an already authenticated, invitation-bound transport. */
 export class ReplicaSyncSession {
+  private readonly remoteUpdateOrigin = {};
   private currentState: ReplicaSyncState = "new";
   private messageTail: Promise<void> = Promise.resolve();
   private messageUnsubscribe?: Unsubscribe;
@@ -140,7 +140,7 @@ export class ReplicaSyncSession {
     update: Uint8Array,
     origin: unknown,
   ): void => {
-    if (this.currentState !== "connected" || origin === REMOTE_UPDATE_ORIGIN)
+    if (this.currentState !== "connected" || origin === this.remoteUpdateOrigin)
       return;
     try {
       const session = this.authorizeSession();
@@ -236,7 +236,7 @@ export class ReplicaSyncSession {
           "update-too-large",
           "CRDT update exceeds the available transport payload bound.",
         );
-      this.replica.applyUpdate(payload, REMOTE_UPDATE_ORIGIN);
+      this.replica.applyUpdate(payload, this.remoteUpdateOrigin);
       return;
     }
     throw new ReplicaSyncError(

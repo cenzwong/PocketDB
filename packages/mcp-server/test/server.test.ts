@@ -176,3 +176,46 @@ test("serializes nested SQLite bigint results as decimal strings in both MCP out
     });
   }
 });
+
+test("inspects capabilities without invoking unsupported SQL schema", async () => {
+  const client = {
+    engineId: "sqlite",
+    access: "read-only",
+    capabilities: { operations: ["query"] },
+    schema: vi.fn(async () => {
+      throw new Error("unsupported");
+    }),
+  };
+  const close = vi.fn(async () => undefined);
+  const mcpClient = await startClient(
+    createPocketDBMcpServer({
+      connect: (async () => ({ client, close })) as never,
+    }),
+  );
+  const connected = await mcpClient.callTool({
+    name: "pocketdb_connect",
+    arguments: {
+      invitationUri: "pocketdb://valid",
+      signalingEndpoint: "https://signal.example",
+    },
+  });
+  const {
+    data: { connectionId },
+  } = connected.structuredContent as { data: { connectionId: string } };
+  try {
+    const result = await mcpClient.callTool({
+      name: "pocketdb_inspect",
+      arguments: { connectionId },
+    });
+    expect(result.structuredContent).toEqual({
+      ok: true,
+      data: { capabilities: client.capabilities },
+    });
+    expect(client.schema).not.toHaveBeenCalled();
+  } finally {
+    await mcpClient.callTool({
+      name: "pocketdb_disconnect",
+      arguments: { connectionId },
+    });
+  }
+});

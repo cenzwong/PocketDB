@@ -60,6 +60,16 @@ export class SqliteEngineAdapter implements EngineAdapter {
         "SQLite dataDir must be a string.",
       );
     }
+    if (
+      typeof dataDir === "string" &&
+      dataDir !== "memory://" &&
+      !/^opfs:\/\/[a-zA-Z0-9_-]+$/.test(dataDir)
+    ) {
+      throw new EngineOperationError(
+        "sqlite-storage-unavailable",
+        "SQLite dataDir must use opfs:// followed by letters, digits, underscores, or hyphens.",
+      );
+    }
     return new SqliteEngineInstance(
       instanceId,
       dataDir ?? "memory://",
@@ -419,10 +429,7 @@ export class SqliteEngineInstance implements EngineInstance {
     return this.dataDir === "memory://";
   }
   private storageName(): string {
-    return (
-      this.dataDir.slice("opfs://".length).replace(/[^a-zA-Z0-9_-]/g, "-") ||
-      "database"
-    );
+    return this.dataDir.slice("opfs://".length);
   }
   private runExclusive<T>(action: () => T | Promise<T>): Promise<T> {
     const result = this.operationTail.then(action, action);

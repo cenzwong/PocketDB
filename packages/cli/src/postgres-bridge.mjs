@@ -594,7 +594,7 @@ function commandComplete(command, affectedRows, rowCount, sql) {
       ? ` 0 ${count}`
       : tag === "SELECT"
         ? ` ${rowCount ?? 0}`
-        : count > 0
+        : count > 0 || tag === "UPDATE" || tag === "DELETE"
           ? ` ${count}`
           : "";
   return message("C", cstringBuffer(`${tag}${suffix}`));

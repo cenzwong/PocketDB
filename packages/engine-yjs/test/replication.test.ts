@@ -56,6 +56,47 @@ describe("authenticated Yjs replica synchronization", () => {
     }
   });
 
+  it("forwards a connected peer's update to another connected peer", async () => {
+    const host = new YjsReplica();
+    const first = new YjsReplica();
+    const second = new YjsReplica();
+    const hostIdentity = await createPeerIdentity();
+    const firstPair = await createAuthenticatedPair(
+      hostIdentity,
+      await createPeerIdentity(),
+    );
+    const secondPair = await createAuthenticatedPair(
+      hostIdentity,
+      await createPeerIdentity(),
+    );
+    const firstSessions = createSessions(host, first, firstPair);
+    const secondSessions = createSessions(host, second, secondPair);
+    try {
+      await Promise.all([
+        firstSessions.host.start(),
+        firstSessions.client.start(),
+        secondSessions.host.start(),
+        secondSessions.client.start(),
+      ]);
+      first.map<string>("items").set("forwarded", "value");
+      await waitFor(
+        () => second.map<string>("items").get("forwarded") === "value",
+      );
+      expect(firstSessions.client.state).toBe("connected");
+      expect(secondSessions.client.state).toBe("connected");
+    } finally {
+      await Promise.all([
+        firstSessions.host.close(),
+        firstSessions.client.close(),
+        secondSessions.host.close(),
+        secondSessions.client.close(),
+      ]);
+      host.destroy();
+      first.destroy();
+      second.destroy();
+    }
+  });
+
   it("exchanges offline state, streams edits and converges after reconnect", async () => {
     const hostIdentity = await createPeerIdentity();
     const clientIdentity = await createPeerIdentity();

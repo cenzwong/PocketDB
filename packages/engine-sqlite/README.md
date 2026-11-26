@@ -4,7 +4,7 @@
 
 ## Storage and recovery
 
-`memory://` is the explicit ephemeral fallback and needs no browser storage. `opfs://<name>` uses SQLite's OPFS SAH-pool VFS with Web Lock ownership. The tested build works without cross-origin isolation headers, but OPFS persistence requires a secure context, OPFS and Web Locks. Only one tab or worker can own a database at once. Browser eviction, private-context behavior, Firefox, Safari, mobile and stable-version support are not certified.
+`memory://` is the explicit ephemeral fallback and needs no browser storage. `opfs://<name>` accepts a non-empty name containing only letters, digits, underscores and hyphens. Existing names containing other characters must be migrated before opening. It uses SQLite's OPFS SAH-pool VFS with Web Lock ownership. The tested build works without cross-origin isolation headers, but OPFS persistence requires a secure context, OPFS and Web Locks. Only one tab or worker can own a database at once. Browser eviction, private-context behavior, Firefox, Safari, mobile and stable-version support are not certified.
 
 The host offers two separate exports, both available in memory and persistent mode:
 

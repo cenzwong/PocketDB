@@ -86,6 +86,8 @@ interface ManagedInvitation {
   state: HostInvitationState;
   message?: string;
   peer?: ManagedPeer;
+  pending?: DiscoveredPeer;
+  pendingUnsubscribe?: () => void;
 }
 
 interface ManagedPeer {
@@ -234,6 +236,11 @@ export class HostAdministration {
     record.state = "revoked";
     record.controller.abort();
     record.authority.revoke();
+    record.pendingUnsubscribe?.();
+    record.pendingUnsubscribe = undefined;
+    const pending = record.pending;
+    record.pending = undefined;
+    if (pending) await pending.close().catch(() => undefined);
     if (record.peer) await this.closePeer(record.peer);
     this.notify();
   }
@@ -273,11 +280,13 @@ export class HostAdministration {
         await discovered.close();
         return;
       }
+      record.pending = discovered;
       const connectedPeer = discovered;
       const binding = await readPeerBinding(
         connectedPeer.peerConnection,
         "host",
       );
+      if (record.controller.signal.aborted || this.disposed) return;
       const unsubscribe = connectedPeer.transport.onMessage((bytes) => {
         void this.handleAuthenticationMessage(
           bytes,
@@ -287,6 +296,7 @@ export class HostAdministration {
           unsubscribe,
         );
       });
+      record.pendingUnsubscribe = unsubscribe;
       connectedPeer.transport.onStateChange((event) => {
         this.options.onPeerState?.(event);
         if (record.peer) {
@@ -299,6 +309,9 @@ export class HostAdministration {
       record.state = "failed";
       record.message = safeError(error);
       this.options.onError?.(record.message);
+      record.pendingUnsubscribe?.();
+      record.pendingUnsubscribe = undefined;
+      record.pending = undefined;
       if (discovered) await discovered.close().catch(() => undefined);
       this.notify();
     }
@@ -348,7 +361,10 @@ export class HostAdministration {
         binding,
         envelope,
       );
+      if (record.controller.signal.aborted || this.disposed) return;
       unsubscribe();
+      record.pendingUnsubscribe = undefined;
+      record.pending = undefined;
       const summary: HostPeerSummary = {
         id: session.sessionId,
         invitationId: record.invitation.roomId,

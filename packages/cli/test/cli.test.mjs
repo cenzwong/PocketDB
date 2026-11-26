@@ -683,3 +683,33 @@ it("keeps savepoint rollbacks in a transaction and rolls back when the driver le
   }
   assert.deepEqual(queries.slice(-2), [rollbackTo, "ROLLBACK"]);
 });
+
+it("returns zero affected rows for UPDATE and DELETE", async () => {
+  const bridge = await createPostgresBridge(
+    {
+      engineId: "postgresql",
+      query: async (sql) => ({
+        rows: [],
+        command: sql.split(" ")[0],
+        affectedRows: 0,
+      }),
+    },
+    { port: 0 },
+  );
+  const driver = new pg.Client({
+    host: bridge.host,
+    port: bridge.port,
+    user: "pocketdb",
+  });
+  try {
+    await driver.connect();
+    assert.equal(
+      (await driver.query("UPDATE items SET value = 1")).rowCount,
+      0,
+    );
+    assert.equal((await driver.query("DELETE FROM items")).rowCount, 0);
+  } finally {
+    await driver.end();
+    await bridge.close();
+  }
+});

@@ -94,7 +94,10 @@ export function createPocketDBMcpServer(options: PocketDBMcpOptions = {}) {
         const data: Record<string, unknown> = {
           capabilities: client.capabilities,
         };
-        if (client.engineId !== "kv") {
+        if (
+          client.engineId !== "kv" &&
+          client.capabilities.operations.includes("schema")
+        ) {
           data.schema = await client.schema({
             ...(schema === undefined ? {} : { schema }),
             ...(table === undefined ? {} : { table }),

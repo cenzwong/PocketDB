@@ -46,6 +46,19 @@ describe("SQLite engine adapter", () => {
     ).toThrow("SQLite database file must be a Uint8Array.");
   });
 
+  it("rejects persistent names that could alias another directory", () => {
+    const adapter = new SqliteEngineAdapter();
+    expect(() =>
+      adapter.createInstance({ dataDir: "opfs://sales.2026" }, "a"),
+    ).toThrow(/letters, digits/);
+    expect(() =>
+      adapter.createInstance({ dataDir: "opfs://sales-2026" }, "b"),
+    ).not.toThrow();
+    expect(() => adapter.createInstance({ dataDir: "opfs://" }, "c")).toThrow(
+      /letters, digits/,
+    );
+  });
+
   it("serializes transaction ownership and keeps it after rollback to savepoint", async () => {
     const instance = new SqliteEngineAdapter().createInstance(
       { dataDir: "memory://" },
