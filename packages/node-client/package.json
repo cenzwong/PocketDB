@@ -1,0 +1,40 @@
+{
+  "name": "@pocketdb/node-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "types": "./types/index.d.ts",
+  "engines": {
+    "node": ">=24.0.0 <27"
+  },
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "types",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "node --check src/index.mjs && node --check examples/remote.mjs && node --check test/remote-browser.mjs && tsc --noEmit",
+    "test": "pnpm build && node test/import-smoke.mjs",
+    "test:browser": "pnpm build && node test/remote-browser.mjs",
+    "example": "node examples/remote.mjs"
+  },
+  "dependencies": {
+    "@pocketdb/client": "workspace:*",
+    "@pocketdb/protocol": "workspace:*",
+    "@pocketdb/transport": "workspace:*",
+    "werift": "0.28.0"
+  },
+  "devDependencies": {
+    "vite": "8.0.0",
+    "vitest": "4.0.16"
+  }
+}

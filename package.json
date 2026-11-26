@@ -1,0 +1,44 @@
+{
+  "name": "pocketdb",
+  "private": true,
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=24.0.0 <27"
+  },
+  "scripts": {
+    "format": "biome format --write apps packages tests",
+    "format:check": "biome format apps packages tests",
+    "lint": "biome lint apps packages tests",
+    "typecheck": "pnpm -r --workspace-concurrency=1 run typecheck",
+    "test": "pnpm -r --workspace-concurrency=1 run test",
+    "test:browser": "pnpm -r --workspace-concurrency=1 run test:browser",
+    "test:pages": "pnpm --filter @pocketdb/web test:pages",
+    "test:pages:artifact": "pnpm --filter @pocketdb/web test:pages:artifact",
+    "build": "pnpm --filter @pocketdb/web build",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm check:board",
+    "check:board": "node tests/check-board.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.7",
+    "typescript": "6.0.3",
+    "vitest": "4.0.16"
+  },
+  "version": "1.0.0",
+  "description": "Run and share databases hosted in a browser.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cenzwong/PocketDB.git"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/cenzwong/PocketDB/issues"
+  },
+  "homepage": "https://github.com/cenzwong/PocketDB#readme"
+}

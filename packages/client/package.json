@@ -1,0 +1,24 @@
+{
+  "name": "@pocketdb/client",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:browser": "node test/browser.mjs"
+  },
+  "dependencies": {
+    "@pocketdb/protocol": "workspace:*",
+    "@pocketdb/transport": "workspace:*"
+  },
+  "devDependencies": {
+    "@pocketdb/engine-kv": "workspace:*",
+    "@pocketdb/engine-pglite": "workspace:*",
+    "@pocketdb/remote-access": "workspace:*",
+    "@pocketdb/runtime": "workspace:*"
+  }
+}

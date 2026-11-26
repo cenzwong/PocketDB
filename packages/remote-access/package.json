@@ -1,0 +1,21 @@
+{
+  "name": "@pocketdb/remote-access",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@pocketdb/protocol": "workspace:*",
+    "@pocketdb/runtime": "workspace:*",
+    "@pocketdb/transport": "workspace:*"
+  },
+  "devDependencies": {
+    "@pocketdb/engine-kv": "workspace:*"
+  }
+}

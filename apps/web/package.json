@@ -1,0 +1,30 @@
+{
+  "name": "@pocketdb/web",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@pocketdb/engine-yjs": "workspace:*",
+    "@pocketdb/engine-kv": "workspace:*",
+    "@pocketdb/engine-pglite": "workspace:*",
+    "@pocketdb/engine-sqlite": "workspace:*",
+    "@pocketdb/engine-duckdb": "workspace:*",
+    "@pocketdb/client": "workspace:*",
+    "@pocketdb/protocol": "workspace:*",
+    "@pocketdb/remote-access": "workspace:*",
+    "@pocketdb/runtime": "workspace:*",
+    "@pocketdb/transport": "workspace:*"
+  },
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:browser": "node test/console-browser.mjs && node test/host-administration-browser.mjs && node test/data-management-browser.mjs && node test/crdt-console-browser.mjs",
+    "test:pages": "pnpm build && pnpm test:pages:artifact",
+    "test:pages:artifact": "node test/pages-artifact-browser.mjs",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite": "8.0.0"
+  }
+}

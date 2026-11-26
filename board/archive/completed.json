@@ -1,0 +1,430 @@
+[
+  {
+    "revision": "305098005dc63218e2822a7853c0b7c12b93b6e4",
+    "tasks": {
+      "TASK-001": {
+        "record": "TASK-001-create-delivery-plan.md",
+        "dependsOn": []
+      },
+      "TASK-002": {
+        "record": "TASK-002-measure-static-hosting-and-worker-compatibility.md",
+        "dependsOn": [
+          "TASK-001"
+        ]
+      },
+      "TASK-003": {
+        "record": "TASK-003-measure-browser-webrtc-request-delivery.md",
+        "dependsOn": [
+          "TASK-001"
+        ]
+      },
+      "TASK-004": {
+        "record": "TASK-004-evaluate-discovery-and-nat-traversal.md",
+        "dependsOn": [
+          "TASK-003"
+        ]
+      },
+      "TASK-005": {
+        "record": "TASK-005-evaluate-pglite-and-browser-persistence.md",
+        "dependsOn": [
+          "TASK-002"
+        ]
+      },
+      "TASK-006": {
+        "record": "TASK-006-validate-postgresql-session-and-read-only-semantics.md",
+        "dependsOn": [
+          "TASK-005"
+        ]
+      },
+      "TASK-007": {
+        "record": "TASK-007-probe-node-to-browser-connectivity.md",
+        "dependsOn": [
+          "TASK-003"
+        ]
+      },
+      "TASK-008": {
+        "record": "TASK-008-probe-remote-postgresql-wire-forwarding.md",
+        "dependsOn": [
+          "TASK-005",
+          "TASK-007"
+        ]
+      },
+      "TASK-009": {
+        "record": "TASK-009-probe-remote-resp-compatibility.md",
+        "dependsOn": [
+          "TASK-007"
+        ]
+      },
+      "TASK-010": {
+        "record": "TASK-010-measure-host-tab-and-worker-lifecycle.md",
+        "dependsOn": [
+          "TASK-003",
+          "TASK-005"
+        ]
+      },
+      "TASK-011": {
+        "record": "TASK-011-validate-peer-identity-and-capability-design.md",
+        "dependsOn": [
+          "TASK-003"
+        ]
+      },
+      "TASK-012": {
+        "record": "TASK-012-ratify-initial-architecture-and-feasibility-exit.md",
+        "dependsOn": [
+          "TASK-004",
+          "TASK-006",
+          "TASK-008",
+          "TASK-009",
+          "TASK-010",
+          "TASK-011"
+        ]
+      },
+      "TASK-013": {
+        "record": "TASK-013-set-up-the-typescript-workspace-and-ci-checks.md",
+        "dependsOn": [
+          "TASK-012"
+        ]
+      },
+      "TASK-014": {
+        "record": "TASK-014-define-engine-contracts-and-the-local-runtime.md",
+        "dependsOn": [
+          "TASK-013"
+        ]
+      },
+      "TASK-015": {
+        "record": "TASK-015-run-engine-sessions-in-a-database-worker.md",
+        "dependsOn": [
+          "TASK-014"
+        ]
+      },
+      "TASK-016": {
+        "record": "TASK-016-implement-core-key-value-operations.md",
+        "dependsOn": [
+          "TASK-014"
+        ]
+      },
+      "TASK-017": {
+        "record": "TASK-017-add-key-expiration-scanning-and-memory-limits.md",
+        "dependsOn": [
+          "TASK-016"
+        ]
+      },
+      "TASK-018": {
+        "record": "TASK-018-integrate-the-pglite-sql-adapter.md",
+        "dependsOn": [
+          "TASK-014"
+        ]
+      },
+      "TASK-019": {
+        "record": "TASK-019-persist-browser-local-key-value-instances.md",
+        "dependsOn": [
+          "TASK-015",
+          "TASK-017"
+        ]
+      },
+      "TASK-020": {
+        "record": "TASK-020-persist-browser-local-postgresql-instances.md",
+        "dependsOn": [
+          "TASK-015",
+          "TASK-018"
+        ]
+      },
+      "TASK-021": {
+        "record": "TASK-021-provide-the-local-browser-database-console.md",
+        "dependsOn": [
+          "TASK-015",
+          "TASK-016",
+          "TASK-018"
+        ]
+      },
+      "TASK-022": {
+        "record": "TASK-022-verify-the-local-runtime-milestone.md",
+        "dependsOn": [
+          "TASK-019",
+          "TASK-020",
+          "TASK-021"
+        ]
+      },
+      "TASK-023": {
+        "record": "TASK-023-implement-the-protocol-codec-and-validation.md",
+        "dependsOn": [
+          "TASK-012",
+          "TASK-013"
+        ]
+      },
+      "TASK-024": {
+        "record": "TASK-024-define-transport-contracts-and-an-in-process-adapter.md",
+        "dependsOn": [
+          "TASK-013"
+        ]
+      },
+      "TASK-025": {
+        "record": "TASK-025-implement-the-webrtc-data-channel-adapter.md",
+        "dependsOn": [
+          "TASK-024"
+        ]
+      },
+      "TASK-026": {
+        "record": "TASK-026-integrate-replaceable-discovery-and-ice-configuration.md",
+        "dependsOn": [
+          "TASK-025"
+        ]
+      },
+      "TASK-027": {
+        "record": "TASK-027-implement-secure-invitations-and-uri-parsing.md",
+        "dependsOn": [
+          "TASK-023"
+        ]
+      },
+      "TASK-028": {
+        "record": "TASK-028-authenticate-peer-bound-sessions-and-revoke-access.md",
+        "dependsOn": [
+          "TASK-025",
+          "TASK-027"
+        ]
+      },
+      "TASK-029": {
+        "record": "TASK-029-enforce-engine-permissions-before-execution.md",
+        "dependsOn": [
+          "TASK-018",
+          "TASK-028"
+        ]
+      },
+      "TASK-030": {
+        "record": "TASK-030-route-authenticated-remote-requests-to-engine-sessions.md",
+        "dependsOn": [
+          "TASK-015",
+          "TASK-028",
+          "TASK-029"
+        ]
+      },
+      "TASK-031": {
+        "record": "TASK-031-deliver-the-browser-typescript-client-sdk.md",
+        "dependsOn": [
+          "TASK-027",
+          "TASK-030"
+        ]
+      },
+      "TASK-032": {
+        "record": "TASK-032-prove-remote-database-access-on-two-devices.md",
+        "dependsOn": [
+          "TASK-022",
+          "TASK-026",
+          "TASK-031"
+        ]
+      },
+      "TASK-033": {
+        "record": "TASK-033-specify-and-implement-portable-snapshots.md",
+        "dependsOn": [
+          "TASK-019",
+          "TASK-020"
+        ]
+      },
+      "TASK-034": {
+        "record": "TASK-034-build-host-and-invitation-administration.md",
+        "dependsOn": [
+          "TASK-021",
+          "TASK-027",
+          "TASK-028"
+        ]
+      },
+      "TASK-035": {
+        "record": "TASK-035-build-the-browser-client-console.md",
+        "dependsOn": [
+          "TASK-031"
+        ]
+      },
+      "TASK-036": {
+        "record": "TASK-036-add-host-data-management-controls.md",
+        "dependsOn": [
+          "TASK-033",
+          "TASK-034"
+        ]
+      },
+      "TASK-037": {
+        "record": "TASK-037-enforce-bounded-remote-execution.md",
+        "dependsOn": [
+          "TASK-030"
+        ]
+      },
+      "TASK-038": {
+        "record": "TASK-038-recover-browser-clients-from-disconnects.md",
+        "dependsOn": [
+          "TASK-026",
+          "TASK-031"
+        ]
+      },
+      "TASK-039": {
+        "record": "TASK-039-expose-local-metrics-and-network-diagnostics.md",
+        "dependsOn": [
+          "TASK-034",
+          "TASK-035",
+          "TASK-038"
+        ]
+      },
+      "TASK-041": {
+        "record": "TASK-041-verify-browser-compatibility-limits-and-performance.md",
+        "dependsOn": [
+          "TASK-032",
+          "TASK-037",
+          "TASK-038",
+          "TASK-039"
+        ]
+      },
+      "TASK-042": {
+        "record": "TASK-042-publish-hosted-mode-guides-and-executable-examples.md",
+        "dependsOn": [
+          "TASK-033",
+          "TASK-035",
+          "TASK-039"
+        ]
+      },
+      "TASK-044": {
+        "record": "TASK-044-ship-the-node-js-client-transport.md",
+        "dependsOn": [
+          "TASK-032",
+          "TASK-065"
+        ]
+      },
+      "TASK-045": {
+        "record": "TASK-045-deliver-scriptable-direct-cli-commands.md",
+        "dependsOn": [
+          "TASK-044"
+        ]
+      },
+      "TASK-046": {
+        "record": "TASK-046-deliver-the-postgresql-localhost-bridge.md",
+        "dependsOn": [
+          "TASK-044"
+        ]
+      },
+      "TASK-047": {
+        "record": "TASK-047-deliver-the-redis-resp-localhost-bridge.md",
+        "dependsOn": [
+          "TASK-044"
+        ]
+      },
+      "TASK-048": {
+        "record": "TASK-048-expose-native-bridges-through-the-cli.md",
+        "dependsOn": [
+          "TASK-045",
+          "TASK-046",
+          "TASK-047"
+        ]
+      },
+      "TASK-049": {
+        "record": "TASK-049-verify-native-drivers-and-publish-integration-examples.md",
+        "dependsOn": [
+          "TASK-048"
+        ]
+      },
+      "TASK-050": {
+        "record": "TASK-050-probe-yjs-convergence-and-replication-limits.md",
+        "dependsOn": [
+          "TASK-032"
+        ]
+      },
+      "TASK-051": {
+        "record": "TASK-051-define-distributed-semantics-and-the-typed-crdt-adapter.md",
+        "dependsOn": [
+          "TASK-050"
+        ]
+      },
+      "TASK-052": {
+        "record": "TASK-052-synchronize-authorized-crdt-replicas.md",
+        "dependsOn": [
+          "TASK-051"
+        ]
+      },
+      "TASK-053": {
+        "record": "TASK-053-persist-and-transfer-crdt-replica-state.md",
+        "dependsOn": [
+          "TASK-051"
+        ]
+      },
+      "TASK-054": {
+        "record": "TASK-054-provide-the-crdt-console-and-release-demonstration.md",
+        "dependsOn": [
+          "TASK-052",
+          "TASK-053"
+        ]
+      },
+      "TASK-055": {
+        "record": "TASK-055-probe-sqlite-and-duckdb-on-static-hosting.md",
+        "dependsOn": [
+          "TASK-002"
+        ]
+      },
+      "TASK-056": {
+        "record": "TASK-056-add-the-selected-sqlite-adapter.md",
+        "dependsOn": [
+          "TASK-022",
+          "TASK-055"
+        ]
+      },
+      "TASK-057": {
+        "record": "TASK-057-add-the-selected-duckdb-analytical-adapter.md",
+        "dependsOn": [
+          "TASK-022",
+          "TASK-055"
+        ]
+      },
+      "TASK-058": {
+        "record": "TASK-058-select-and-prototype-document-storage.md",
+        "dependsOn": [
+          "TASK-022"
+        ]
+      },
+      "TASK-059": {
+        "record": "TASK-059-select-and-prototype-vector-search.md",
+        "dependsOn": [
+          "TASK-022"
+        ]
+      },
+      "TASK-060": {
+        "record": "TASK-060-publish-machine-readable-client-capabilities.md",
+        "dependsOn": [
+          "TASK-031"
+        ]
+      },
+      "TASK-061": {
+        "record": "TASK-061-expose-authorized-database-operations-via-mcp.md",
+        "dependsOn": [
+          "TASK-044",
+          "TASK-060"
+        ]
+      },
+      "TASK-062": {
+        "record": "TASK-062-decide-whether-a-direct-python-sdk-is-justified.md",
+        "dependsOn": [
+          "TASK-049"
+        ]
+      },
+      "TASK-063": {
+        "record": "TASK-063-evaluate-infrastructure-service-extension-boundaries.md",
+        "dependsOn": [
+          "TASK-054",
+          "TASK-060"
+        ]
+      },
+      "TASK-064": {
+        "record": "TASK-064-verify-an-agent-end-to-end-workflow.md",
+        "dependsOn": [
+          "TASK-061"
+        ]
+      },
+      "TASK-065": {
+        "record": "TASK-065-decide-package-distribution-and-versioning.md",
+        "dependsOn": [
+          "TASK-032"
+        ]
+      },
+      "TASK-066": {
+        "record": "TASK-066-distill-handoff-documentation.md",
+        "dependsOn": [
+          "TASK-001"
+        ]
+      }
+    }
+  }
+]

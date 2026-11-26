@@ -1,0 +1,463 @@
+[
+  {
+    "name": "hello",
+    "envelope": {
+      "version": 1,
+      "type": "hello",
+      "id": "hello-01",
+      "supportedVersions": [1]
+    }
+  },
+  {
+    "name": "hello-ack",
+    "envelope": {
+      "version": 1,
+      "type": "hello-ack",
+      "id": "hello-01",
+      "selectedVersion": 1,
+      "engines": {
+        "$pdb": "array",
+        "value": [
+          {
+            "$pdb": "object",
+            "value": [
+              ["id", "kv"],
+              [
+                "capabilities",
+                {
+                  "$pdb": "object",
+                  "value": [
+                    [
+                      "version",
+                      {
+                        "$pdb": "number",
+                        "value": "1"
+                      }
+                    ],
+                    ["engineId", "kv"],
+                    ["access", "read-write"],
+                    [
+                      "operations",
+                      {
+                        "$pdb": "array",
+                        "value": ["GET", "SET"]
+                      }
+                    ],
+                    [
+                      "readOnlyOperations",
+                      {
+                        "$pdb": "array",
+                        "value": ["GET"]
+                      }
+                    ],
+                    [
+                      "operationMetadata",
+                      {
+                        "$pdb": "array",
+                        "value": [
+                          {
+                            "$pdb": "object",
+                            "value": [
+                              ["name", "GET"],
+                              [
+                                "allowedAccess",
+                                {
+                                  "$pdb": "array",
+                                  "value": ["read-only", "read-write"]
+                                }
+                              ],
+                              [
+                                "inputSchema",
+                                {
+                                  "$pdb": "object",
+                                  "value": [
+                                    [
+                                      "$schema",
+                                      "https://json-schema.org/draft/2020-12/schema"
+                                    ],
+                                    ["type", "array"],
+                                    [
+                                      "prefixItems",
+                                      {
+                                        "$pdb": "array",
+                                        "value": [
+                                          {
+                                            "$pdb": "object",
+                                            "value": [["type", "string"]]
+                                          }
+                                        ]
+                                      }
+                                    ],
+                                    [
+                                      "minItems",
+                                      {
+                                        "$pdb": "number",
+                                        "value": "1"
+                                      }
+                                    ],
+                                    [
+                                      "maxItems",
+                                      {
+                                        "$pdb": "number",
+                                        "value": "1"
+                                      }
+                                    ],
+                                    ["items", true]
+                                  ]
+                                }
+                              ],
+                              [
+                                "outputSchema",
+                                {
+                                  "$pdb": "object",
+                                  "value": [
+                                    [
+                                      "$schema",
+                                      "https://json-schema.org/draft/2020-12/schema"
+                                    ],
+                                    [
+                                      "oneOf",
+                                      {
+                                        "$pdb": "array",
+                                        "value": [
+                                          {
+                                            "$pdb": "object",
+                                            "value": [
+                                              [
+                                                "oneOf",
+                                                {
+                                                  "$pdb": "array",
+                                                  "value": [
+                                                    {
+                                                      "$pdb": "object",
+                                                      "value": [
+                                                        ["type", "string"],
+                                                        [
+                                                          "x-runtimeType",
+                                                          "string"
+                                                        ]
+                                                      ]
+                                                    },
+                                                    {
+                                                      "$pdb": "object",
+                                                      "value": [
+                                                        ["type", "string"],
+                                                        [
+                                                          "contentEncoding",
+                                                          "base64"
+                                                        ],
+                                                        [
+                                                          "x-runtimeType",
+                                                          "Uint8Array"
+                                                        ]
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            ]
+                                          },
+                                          {
+                                            "$pdb": "object",
+                                            "value": [["type", "null"]]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  ]
+                                }
+                              ]
+                            ]
+                          },
+                          {
+                            "$pdb": "object",
+                            "value": [
+                              ["name", "SET"],
+                              [
+                                "allowedAccess",
+                                {
+                                  "$pdb": "array",
+                                  "value": ["read-write"]
+                                }
+                              ],
+                              [
+                                "inputSchema",
+                                {
+                                  "$pdb": "object",
+                                  "value": [
+                                    [
+                                      "$schema",
+                                      "https://json-schema.org/draft/2020-12/schema"
+                                    ],
+                                    ["type", "array"],
+                                    [
+                                      "prefixItems",
+                                      {
+                                        "$pdb": "array",
+                                        "value": [
+                                          {
+                                            "$pdb": "object",
+                                            "value": [["type", "string"]]
+                                          },
+                                          {
+                                            "$pdb": "object",
+                                            "value": [
+                                              [
+                                                "oneOf",
+                                                {
+                                                  "$pdb": "array",
+                                                  "value": [
+                                                    {
+                                                      "$pdb": "object",
+                                                      "value": [
+                                                        ["type", "string"],
+                                                        [
+                                                          "x-runtimeType",
+                                                          "string"
+                                                        ]
+                                                      ]
+                                                    },
+                                                    {
+                                                      "$pdb": "object",
+                                                      "value": [
+                                                        ["type", "string"],
+                                                        [
+                                                          "contentEncoding",
+                                                          "base64"
+                                                        ],
+                                                        [
+                                                          "x-runtimeType",
+                                                          "Uint8Array"
+                                                        ]
+                                                      ]
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ],
+                                    [
+                                      "minItems",
+                                      {
+                                        "$pdb": "number",
+                                        "value": "2"
+                                      }
+                                    ],
+                                    [
+                                      "maxItems",
+                                      {
+                                        "$pdb": "number",
+                                        "value": "2"
+                                      }
+                                    ],
+                                    ["items", true]
+                                  ]
+                                }
+                              ],
+                              [
+                                "outputSchema",
+                                {
+                                  "$pdb": "object",
+                                  "value": [
+                                    [
+                                      "$schema",
+                                      "https://json-schema.org/draft/2020-12/schema"
+                                    ],
+                                    ["const", "OK"]
+                                  ]
+                                }
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    [
+                      "features",
+                      {
+                        "$pdb": "object",
+                        "value": []
+                      }
+                    ]
+                  ]
+                }
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "name": "authenticate",
+    "envelope": {
+      "version": 1,
+      "type": "authenticate",
+      "id": "auth-01",
+      "invitation": {
+        "$pdb": "object",
+        "value": [["token", "redacted-fixture-token"]]
+      },
+      "peerIdentity": "peer-client"
+    }
+  },
+  {
+    "name": "authentication-challenge",
+    "envelope": {
+      "version": 1,
+      "type": "authentication-challenge",
+      "id": "auth-01",
+      "nonce": "random-nonce",
+      "clientIdentity": "client-key-id",
+      "hostPublicKey": "base64url-spki",
+      "expiresAt": 1795550000000,
+      "signature": "base64url-signature"
+    }
+  },
+  {
+    "name": "authentication-proof",
+    "envelope": {
+      "version": 1,
+      "type": "authentication-proof",
+      "id": "auth-01",
+      "nonce": "random-nonce",
+      "identityProof": "base64url-ecdsa-proof",
+      "capabilityProof": "base64url-hmac-proof"
+    }
+  },
+  {
+    "name": "authenticated",
+    "envelope": {
+      "version": 1,
+      "type": "authenticated",
+      "id": "auth-01",
+      "sessionId": "session-01",
+      "instanceId": "instance-01",
+      "engineId": "kv"
+    }
+  },
+  {
+    "name": "open-session",
+    "envelope": {
+      "version": 1,
+      "type": "open-session",
+      "id": "open-01",
+      "sessionId": "session-01",
+      "instanceId": "instance-01",
+      "engineId": "kv",
+      "access": "read-write"
+    }
+  },
+  {
+    "name": "close-session",
+    "envelope": {
+      "version": 1,
+      "type": "close-session",
+      "id": "close-01",
+      "sessionId": "session-01"
+    }
+  },
+  {
+    "name": "key-value-request-with-binary",
+    "envelope": {
+      "version": 1,
+      "type": "request",
+      "id": "request-01",
+      "sessionId": "session-01",
+      "instanceId": "instance-01",
+      "engineId": "kv",
+      "operation": "SET",
+      "payload": {
+        "$pdb": "object",
+        "value": [
+          ["key", "picture"],
+          [
+            "value",
+            {
+              "$pdb": "bytes",
+              "value": "AP9B"
+            }
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "name": "sql-response-with-exact-numeric-values",
+    "envelope": {
+      "version": 1,
+      "type": "response",
+      "id": "request-02",
+      "sessionId": "session-sql",
+      "payload": {
+        "$pdb": "object",
+        "value": [
+          [
+            "rows",
+            {
+              "$pdb": "array",
+              "value": [
+                {
+                  "$pdb": "object",
+                  "value": [
+                    [
+                      "large_count",
+                      {
+                        "$pdb": "bigint",
+                        "value": "9007199254740993123"
+                      }
+                    ],
+                    ["amount", "12345678901234567890.0001"],
+                    ["enabled", true],
+                    ["missing", null]
+                  ]
+                }
+              ]
+            }
+          ],
+          [
+            "affectedRows",
+            {
+              "$pdb": "number",
+              "value": "1"
+            }
+          ]
+        ]
+      }
+    }
+  },
+  {
+    "name": "structured-error",
+    "envelope": {
+      "version": 1,
+      "type": "error",
+      "id": "request-03",
+      "sessionId": "session-01",
+      "error": {
+        "code": "permission-denied",
+        "message": "This session cannot write.",
+        "retryable": false,
+        "outcome": "not-started"
+      }
+    }
+  },
+  {
+    "name": "heartbeat",
+    "envelope": {
+      "version": 1,
+      "type": "heartbeat",
+      "sequence": 7
+    }
+  },
+  {
+    "name": "disconnect",
+    "envelope": {
+      "version": 1,
+      "type": "disconnect",
+      "reason": "host-shutdown"
+    }
+  }
+]

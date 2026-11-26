@@ -1,0 +1,37 @@
+{
+  "name": "@pocketdb/mcp-server",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24.0.0 <27"
+  },
+  "bin": {
+    "pocketdb-mcp": "./dist/stdio.js"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "node --check examples/agent.mjs && tsc --noEmit",
+    "test": "vitest run",
+    "test:browser": "pnpm build && pnpm --filter @pocketdb/node-client build && node test/browser.mjs",
+    "start": "node dist/stdio.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "2.3.1",
+    "@pocketdb/node-client": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "2.3.1",
+    "@pocketdb/client": "workspace:*",
+    "@pocketdb/protocol": "workspace:*",
+    "@pocketdb/transport": "workspace:*",
+    "@types/node": "20.19.43",
+    "typescript": "6.0.3",
+    "vite": "8.0.0",
+    "vitest": "4.0.16"
+  }
+}
