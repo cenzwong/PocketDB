@@ -476,8 +476,8 @@ export class DuckDBEngineInstance implements EngineInstance {
   }
 
   private updateTransactionOwner(sessionId: SessionId, sql: string): void {
-    const command = /^\s*(BEGIN|COMMIT|END|ROLLBACK)\b/i
-      .exec(sql)?.[1]
+    const command = /^(BEGIN|COMMIT|END|ROLLBACK)\b/i
+      .exec(stripLeadingSqlComments(sql))?.[1]
       ?.toLowerCase();
     if (command === "begin") this.transactionOwner = sessionId;
     if (
@@ -496,6 +496,37 @@ export class DuckDBEngineInstance implements EngineInstance {
     );
     return result;
   }
+}
+
+function stripLeadingSqlComments(sql: string): string {
+  let offset = 0;
+  while (offset < sql.length) {
+    if (/\s/.test(sql[offset])) {
+      offset++;
+      continue;
+    }
+    if (sql.startsWith("--", offset)) {
+      const end = sql.indexOf("\n", offset + 2);
+      offset = end < 0 ? sql.length : end + 1;
+      continue;
+    }
+    if (sql.startsWith("/*", offset)) {
+      offset += 2;
+      let depth = 1;
+      while (offset < sql.length && depth > 0) {
+        if (sql.startsWith("/*", offset)) {
+          depth++;
+          offset += 2;
+        } else if (sql.startsWith("*/", offset)) {
+          depth--;
+          offset += 2;
+        } else offset++;
+      }
+      continue;
+    }
+    break;
+  }
+  return sql.slice(offset);
 }
 
 function parseDatasetName(fileName: string): {

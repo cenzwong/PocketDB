@@ -1,4 +1,5 @@
 import {
+  EngineExecutionUncertainError,
   EngineOperationError,
   EngineRuntimeError,
   type EngineAdapter,
@@ -280,6 +281,7 @@ export class WorkerEngineInstance
           "Could not send a request to the worker.",
           cause,
         ),
+        false,
       );
     }
   }
@@ -324,7 +326,7 @@ export class WorkerEngineInstance
     else pending.resolve(result);
   }
 
-  private fail(error: EngineRuntimeError): void {
+  private fail(error: EngineRuntimeError, dispatched = true): void {
     if (this.state !== "stopped") this.state = "failed";
     this.terminalError ??= error;
     this.terminateWorker();
@@ -332,7 +334,13 @@ export class WorkerEngineInstance
       if (pending.timer) clearTimeout(pending.timer);
       if (pending.abortListener)
         pending.signal?.removeEventListener("abort", pending.abortListener);
-      if (!pending.settled) pending.reject(this.terminalError);
+      if (!pending.settled) {
+        pending.reject(
+          dispatched && pending === this.active && pending.method === "execute"
+            ? new EngineExecutionUncertainError(this.terminalError)
+            : this.terminalError,
+        );
+      }
     }
     this.pending.clear();
     this.queue.length = 0;

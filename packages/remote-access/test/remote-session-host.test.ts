@@ -592,6 +592,62 @@ describe("RemoteSessionHost", () => {
     await runtime.stopInstance(authSession.instanceId);
   });
 
+  it.each(["crash", "timeout"] as const)(
+    "reports unknown when an executing worker ends with %s",
+    async (mode) => {
+      const worker = new HungExecutionWorker(mode === "crash");
+      const runtime = new Runtime();
+      runtime.registerAdapter(
+        new WorkerEngineAdapter(
+          "kv",
+          { operations: ["INCR"], features: {} },
+          () => worker,
+          { requestTimeoutMs: 20 },
+        ),
+      );
+      await runtime.startInstance("kv", authSession.instanceId);
+      const pair = createInProcessTransportPair();
+      const host = new RemoteSessionHost(
+        runtime,
+        pair.right,
+        { authorize: () => authSession },
+        { requestTimeoutMs: 1000 },
+      );
+      const client = new ProtocolPeer(pair.left);
+      await negotiate(client, `worker-${mode}-hello`);
+      await client.exchange({
+        version: 1,
+        type: "open-session",
+        id: `worker-${mode}-open`,
+        sessionId: `worker-${mode}-session`,
+        instanceId: authSession.instanceId,
+        engineId: authSession.engineId,
+        access: "read-write",
+      });
+      const result = await client.exchange({
+        version: 1,
+        type: "request",
+        id: `worker-${mode}-request`,
+        sessionId: `worker-${mode}-session`,
+        instanceId: authSession.instanceId,
+        engineId: authSession.engineId,
+        operation: "INCR",
+        payload: ["counter"],
+      });
+      expect(result).toMatchObject({
+        type: "error",
+        error: {
+          code:
+            mode === "crash" ? "worker-terminated" : "worker-request-timeout",
+          outcome: "unknown",
+          retryable: false,
+        },
+      });
+      expect(worker.executionCount).toBe(1);
+      await host.close();
+    },
+  );
+
   it("preserves an unknown remote outcome and terminates a hung worker at its deadline", async () => {
     const worker = new HungExecutionWorker();
     const runtime = new Runtime();
@@ -742,6 +798,8 @@ class SlowAdapter implements EngineAdapter {
 }
 
 class HungExecutionWorker implements WorkerLike {
+  constructor(private readonly crashOnExecute = false) {}
+  private readonly errorListeners: Array<(event: ErrorEvent) => void> = [];
   terminateCount = 0;
   executionCount = 0;
   private readonly messageListeners: ((
@@ -752,6 +810,11 @@ class HungExecutionWorker implements WorkerLike {
     if (message.type !== "call") return;
     if (message.method === "execute") {
       this.executionCount += 1;
+      if (this.crashOnExecute)
+        queueMicrotask(() => {
+          for (const listener of this.errorListeners)
+            listener({} as ErrorEvent);
+        });
       return;
     }
     const result =
@@ -795,6 +858,8 @@ class HungExecutionWorker implements WorkerLike {
       | ((event: ErrorEvent) => void)
       | ((event: MessageEvent) => void),
   ): void {
+    if (type === "error")
+      this.errorListeners.push(listener as (event: ErrorEvent) => void);
     if (type === "message") {
       this.messageListeners.push(
         listener as (event: MessageEvent<WorkerReplyMessage>) => void,

@@ -127,6 +127,14 @@ export class EngineRuntimeError extends Error {
   }
 }
 
+/** A dispatched operation whose completion could not be observed. */
+export class EngineExecutionUncertainError extends EngineRuntimeError {
+  constructor(cause: EngineRuntimeError) {
+    super(cause.code, cause.message, { cause });
+    this.name = "EngineExecutionUncertainError";
+  }
+}
+
 /** An engine-defined operation failure that the runtime preserves across boundaries. */
 export class EngineOperationError extends Error {
   constructor(

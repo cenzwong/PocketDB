@@ -3,6 +3,7 @@ import {
   WorkerEngineAdapter,
   type WorkerLike,
 } from "../src/worker-engine-adapter";
+import { EngineExecutionUncertainError } from "../src/contracts";
 import type {
   WorkerReplyMessage,
   WorkerRequestMessage,
@@ -26,6 +27,39 @@ describe("WorkerEngineAdapter execution bounds", () => {
       ).exportSnapshot(),
     ).resolves.toEqual(new Uint8Array([1, 2, 3]));
     await instance.stop();
+  });
+
+  it("marks only dispatched execution uncertain when a worker times out", async () => {
+    const worker = new ControlledWorker();
+    const adapter = new WorkerEngineAdapter(
+      "bounded-engine",
+      { operations: ["slow"], features: {} },
+      () => worker,
+      { requestTimeoutMs: 10 },
+    );
+    const instance = adapter.createInstance({}, "bounded-instance");
+    await instance.start();
+    const session = await instance.openSession({
+      sessionId: "session",
+      instanceId: "bounded-instance",
+      access: "read-write",
+    });
+    const results = await Promise.allSettled([
+      instance.execute(session, { operation: "slow" }),
+      instance.execute(session, { operation: "slow" }),
+    ]);
+    expect(results[0]).toMatchObject({
+      status: "rejected",
+      reason: expect.any(EngineExecutionUncertainError),
+    });
+    expect(results[1]).toMatchObject({
+      status: "rejected",
+      reason: { code: "worker-request-timeout" },
+    });
+    if (results[1].status === "rejected")
+      expect(results[1].reason).not.toBeInstanceOf(
+        EngineExecutionUncertainError,
+      );
   });
 
   it("terminates the worker at the deadline and settles the active call", async () => {

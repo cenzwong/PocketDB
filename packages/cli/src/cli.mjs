@@ -378,7 +378,8 @@ async function execute(options, invitation, dependencies) {
             "invalid-response",
             "The host returned an invalid export result.",
           );
-        const truncated = rows.length > options.maxRows;
+        const truncated =
+          result.truncated === true || rows.length > options.maxRows;
         const boundedRows = rows.slice(0, options.maxRows);
         return {
           format: "jsonl",

@@ -110,6 +110,35 @@ async function run(): Promise<void> {
       `List normalization failed: ${JSON.stringify(lists)}`,
     );
 
+    stage = "commented transaction ownership";
+    const other = await instance.openSession({
+      instanceId: instance.id,
+      sessionId: `other-${seed}`,
+      access: "owner",
+    });
+    await query(instance, session, "/* begin */ BEGIN");
+    try {
+      await query(instance, other, "SELECT 1");
+      throw new Error("Other session unexpectedly entered the transaction.");
+    } catch (cause) {
+      assertImport(
+        cause instanceof Error &&
+          "code" in cause &&
+          cause.code === "duckdb-session-busy",
+        `Expected transaction ownership: ${String(cause)}`,
+      );
+    }
+    await query(
+      instance,
+      session,
+      "-- comment\n/* outer /* nested */ comment */ COMMIT",
+    );
+    await query(instance, other, "SELECT 1");
+    await query(instance, session, "BEGIN");
+    await query(instance, session, "/* rollback */ ROLLBACK");
+    await query(instance, other, "SELECT 1");
+    await instance.closeSession(other);
+
     stage = "read-only transaction";
     const reader = await instance.openSession({
       instanceId: instance.id,

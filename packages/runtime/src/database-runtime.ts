@@ -1,4 +1,5 @@
 import {
+  EngineExecutionUncertainError,
   EngineOperationError,
   EngineRuntimeError,
   type EngineAdapter,
@@ -221,7 +222,11 @@ export class DatabaseRuntime {
     try {
       return await record.engine.execute(route.session, request);
     } catch (cause) {
-      if (cause instanceof EngineOperationError) throw cause;
+      if (
+        cause instanceof EngineOperationError ||
+        cause instanceof EngineExecutionUncertainError
+      )
+        throw cause;
       throw new EngineRuntimeError(
         "execution-failed",
         `Operation '${request.operation}' failed in session '${sessionId}'.`,

@@ -11,6 +11,7 @@ import {
   type ProtocolValue,
 } from "@pocketdb/protocol";
 import {
+  EngineExecutionUncertainError,
   EngineOperationError,
   EngineRuntimeError,
   type DatabaseRuntime,
@@ -660,6 +661,9 @@ function toProtocolError(cause: unknown): ProtocolError {
     cause instanceof Error && cause.message
       ? cause.message.slice(0, MAX_PROTOCOL_STRING_LENGTH)
       : "The remote operation could not be completed.";
+  if (cause instanceof EngineExecutionUncertainError) {
+    return { code: cause.code, message, retryable: false, outcome: "unknown" };
+  }
   if (cause instanceof EngineOperationError) {
     const notStarted = cause.code === "permission-denied";
     return {

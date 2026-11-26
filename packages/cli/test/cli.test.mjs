@@ -346,6 +346,27 @@ describe("PocketDB CLI parsing and command execution", () => {
     assert.equal(connected.closeCalls, 1);
   });
 
+  it("preserves backend truncation for JSONL exports, including empty results", async () => {
+    for (const rows of [[], [{ value: 1 }]]) {
+      const connected = fakeConnection("duckdb", {
+        queryResult: { rows, truncated: true },
+      });
+      const streams = io();
+      const status = await main(
+        ["export", uri, "--query", "SELECT value FROM items", "--json"],
+        streams,
+        {
+          env: { POCKETDB_SIGNALING_ENDPOINT: "http://127.0.0.1:8080/api" },
+          connect: async () => connected,
+        },
+      );
+      assert.equal(status, 0);
+      const output = JSON.parse(streams.output().stdout);
+      assert.equal(output.rowCount, rows.length);
+      assert.equal(output.truncated, true);
+    }
+  });
+
   it("redacts invitation credentials and maps permission errors to a stable exit code", async () => {
     const streams = io();
     const status = await main(
