@@ -606,6 +606,22 @@ export function mountDistributedConsole(root: HTMLElement): void {
   async function clientChannelOpened(current: ClientPeer): Promise<void> {
     try {
       const binding = readPeerBinding(current.peer, "client");
+      let phase:
+        | "ready"
+        | "preparing"
+        | "challenge"
+        | "verifying"
+        | "confirmed"
+        | "complete"
+        | "failed" = "ready";
+      let verifiedClientId: string | undefined;
+      const rejectAuthentication = (message: string): void => {
+        phase = "failed";
+        current.channel.removeEventListener("message", handle);
+        current.channel.close();
+        current.peer.close();
+        status(clientStatus, message, "error");
+      };
       const handle = async (messageEvent: MessageEvent): Promise<void> => {
         if (typeof messageEvent.data !== "string") return;
         let message: Record<string, unknown>;
@@ -615,23 +631,29 @@ export function mountDistributedConsole(root: HTMLElement): void {
           return;
         }
         if (message.type === "host-ready") {
+          if (phase !== "ready")
+            return rejectAuthentication("Unexpected authentication message.");
+          phase = "preparing";
           try {
             current.binding = await binding;
+            const peerIdentity = await exportPeerPublicKey(
+              current.identity.publicKey,
+            );
+            if (phase !== "preparing") return;
+            const { capability: _capability, ...invitationScope } =
+              current.invitation;
+            phase = "challenge";
+            current.channel.send(
+              JSON.stringify({
+                type: "authenticate",
+                invitation: invitationScope,
+                peerIdentity,
+              }),
+            );
           } catch (error) {
-            status(clientStatus, safeError(error), "error");
+            rejectAuthentication(safeError(error));
             return;
           }
-          const { capability: _capability, ...invitationScope } =
-            current.invitation;
-          current.channel.send(
-            JSON.stringify({
-              type: "authenticate",
-              invitation: invitationScope,
-              peerIdentity: await exportPeerPublicKey(
-                current.identity.publicKey,
-              ),
-            }),
-          );
           status(
             clientStatus,
             "Host is ready; authenticating invitation membership.",
@@ -640,6 +662,9 @@ export function mountDistributedConsole(root: HTMLElement): void {
           return;
         }
         if (message.type === "challenge") {
+          if (phase !== "challenge")
+            return rejectAuthentication("Unexpected authentication challenge.");
+          phase = "verifying";
           try {
             const challenge = message.challenge as PeerAuthenticationChallenge;
             const proof = await respondToPeerChallenge(
@@ -648,14 +673,43 @@ export function mountDistributedConsole(root: HTMLElement): void {
               current.binding as PeerBinding,
               challenge,
             );
+            const clientId = await getPeerIdentityId(
+              current.identity.publicKey,
+            );
+            if (phase !== "verifying") return;
+            verifiedClientId = clientId;
+            phase = "confirmed";
             current.channel.send(JSON.stringify({ type: "proof", proof }));
           } catch (error) {
-            status(clientStatus, safeError(error), "error");
+            rejectAuthentication(safeError(error));
           }
           return;
         }
         if (message.type === "authenticated") {
-          const session = message.session as AuthenticatedPeerSession;
+          if (phase !== "confirmed")
+            return rejectAuthentication(
+              "Host authentication has not been verified.",
+            );
+          const session = message.session as AuthenticatedPeerSession | null;
+          if (
+            !session ||
+            typeof session !== "object" ||
+            typeof session.sessionId !== "string" ||
+            session.sessionId.length === 0 ||
+            session.hostId !== current.invitation.expectedHostId ||
+            session.clientId !== verifiedClientId ||
+            session.roomId !== current.invitation.roomId ||
+            session.instanceId !== current.invitation.instanceId ||
+            session.engineId !== current.invitation.engineId ||
+            session.access !== current.invitation.access ||
+            session.expiresAt !== current.invitation.expiresAt ||
+            (session.expiresAt !== undefined && session.expiresAt <= Date.now())
+          ) {
+            return rejectAuthentication(
+              "Host returned an invalid authenticated session.",
+            );
+          }
+          phase = "complete";
           current.session = session;
           current.channel.removeEventListener("message", handle);
           try {

@@ -57,6 +57,79 @@ try {
         false,
       );
 
+      // A substituted SDP answer must not authenticate itself or receive retained data.
+      await click(client, "#replica-client-offer");
+      const attackOffer = await client.wait(
+        "document.querySelector('#replica-offer-output').value",
+        { timeoutMs: 20_000 },
+      );
+      const attacker = await browser.page(url);
+      try {
+        const attackAnswer = await attacker.evaluate(`(async () => {
+          const peer = new RTCPeerConnection({ iceServers: [] });
+          window.attackPeer = peer;
+          window.attackMessages = [];
+          peer.ondatachannel = ({ channel }) => {
+            window.attackChannel = channel;
+            channel.onmessage = event => window.attackMessages.push(typeof event.data === 'string' ? event.data : 'binary');
+            channel.onopen = () => channel.send(JSON.stringify({ type: 'authenticated', session: {
+              sessionId: 'fake', roomId: 'fake', instanceId: 'fake', engineId: 'crdt', hostId: 'attacker', clientId: 'victim', access: 'read-write'
+            }}));
+          };
+          await peer.setRemoteDescription(${JSON.stringify(JSON.parse(attackOffer))});
+          await peer.setLocalDescription(await peer.createAnswer());
+          if (peer.iceGatheringState !== 'complete') await new Promise(resolve => peer.addEventListener('icegatheringstatechange', () => { if (peer.iceGatheringState === 'complete') resolve(); }));
+          return JSON.stringify(peer.localDescription);
+        })()`);
+        await setValue(client, "#replica-answer-input-client", attackAnswer);
+        await click(client, "#replica-client-accept-answer");
+        await client.wait(
+          "document.querySelector('#replica-client-status').textContent.includes('Host authentication has not been verified')",
+          { timeoutMs: 20_000 },
+        );
+        assert.equal(
+          await attacker.evaluate("window.attackMessages.includes('binary')"),
+          false,
+        );
+      } finally {
+        await attacker.close();
+      }
+
+      // Even after a real host challenge, a confirmation with mismatched scope is rejected.
+      await host.evaluate(`(() => {
+        window.originalChannelSend = RTCDataChannel.prototype.send;
+        RTCDataChannel.prototype.send = function (data) {
+          if (typeof data === 'string') {
+            const message = JSON.parse(data);
+            if (message.type === 'authenticated') {
+              message.session.hostId = 'wrong-host';
+              data = JSON.stringify(message);
+            }
+          }
+          return window.originalChannelSend.call(this, data);
+        };
+      })()`);
+      await click(client, "#replica-client-offer");
+      const alteredOffer = await client.wait(
+        "document.querySelector('#replica-offer-output').value",
+        { timeoutMs: 20_000 },
+      );
+      await setValue(host, "#replica-offer-input", alteredOffer);
+      await click(host, "#replica-host-answer");
+      const alteredAnswer = await host.wait(
+        "document.querySelector('#replica-answer-output').value",
+        { timeoutMs: 20_000 },
+      );
+      await setValue(client, "#replica-answer-input-client", alteredAnswer);
+      await click(client, "#replica-client-accept-answer");
+      await client.wait(
+        "document.querySelector('#replica-client-status').textContent.includes('invalid authenticated session')",
+        { timeoutMs: 20_000 },
+      );
+      await host.evaluate(
+        "RTCDataChannel.prototype.send = window.originalChannelSend",
+      );
+
       await connectPeers(host, client);
       await waitForState(
         host,
@@ -83,6 +156,8 @@ try {
           "read-write invitation authenticated independent WebRTC peer tabs",
           "host and client state converged on initial synchronization",
           "offline edits remained local during disconnection",
+          "forged authentication could not start synchronization or receive retained data",
+          "mismatched session identity was rejected after a valid challenge",
           "offline host and client edits converged after a fresh authenticated connection",
           "membership list was populated and host revoke invalidated active membership",
           "SDP and synchronization state transitions appeared in the console",
